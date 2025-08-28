@@ -1,7 +1,7 @@
 # 🐾 PETISKO
 
 ### 📱 Front-end (React Native)
-##### by [@AlyssonHenri](https://github.com/AlyssonHenri)
+##### by [@santivgo](github.com/santivgo) && [@AlyssonHenri](github.com/AlyssonHenri)
 
 ---
 
