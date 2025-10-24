@@ -1,17 +1,47 @@
 import { Image, Keyboard, StyleSheet, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
-import { Input, Icon } from '@rneui/themed';
 import RegisterInput from '@/components/custom-register-input';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { IState } from '@/interfaces/country';
+import getStates, { getCitiesFromState } from '@/controllers/states-controller';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 
 
 
 export default function RegisterScreen() {
   const [user, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [password, setPassword] = useState('');
+  const [openState, setOpenState] = useState(false);
+  const [openCity, setOpenCity] = useState(false);
+  const [state, setState] = useState(null);
+  const [city, setCity] = useState(null);
+  const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
+  const [cityList, setCityList] = useState<{ label: string; value: string }[]>([]);
+  const [stateTouched, setStateTouched] = useState(false);
+  const [cityTouched, setCityTouched] = useState(false);
+
+
+  useEffect(()=> {
+    getStates().then(statesApi => {
+    const formatted = statesApi.map(state => ({
+      label: state.name,
+      value: state.state_code,
+    }));
+    setStateList(formatted);
+    })
+      }, [])
+  
+
+  async function getCities(value: string) {
+    const citiesList = await getCitiesFromState(value)
+    const formatted = citiesList.map(city => ({
+      label: city,
+      value: city
+    }));
+    setCityList(formatted);
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -33,13 +63,58 @@ export default function RegisterScreen() {
             <RegisterInput outputFunc={(dado)=> setPassword(dado)} placeholder='Digite seu CPF' errorMessage='O campo deve estar preenchido.' />
             <RegisterInput outputFunc={(dado)=> setPassword(dado)} placeholder='Digite o usuário' errorMessage='O campo deve estar preenchido.' />
             <RegisterInput outputFunc={(dado)=> setPassword(dado)} isPasswd={true} placeholder='Digite a senha' errorMessage='O campo deve estar preenchido.' />
-            <RegisterInput outputFunc={(dado)=> setPassword(dado)} placeholder='Cidade' errorMessage='O campo deve estar preenchido.' />
-            <RegisterInput outputFunc={(dado)=> setPassword(dado)} placeholder='Estado' errorMessage='O campo deve estar preenchido.' />
+              <DropDownPicker
+                textStyle={styles.pickerInput}
+                    open={openState}
+                    value={state}
+                    items={stateList}
+                    setOpen={setOpenState}
+                    setValue={setState}
+                    setItems={setStateList}
+                    style={[{marginBottom: 25}, styles.input]}
+                    listMode="MODAL"
+                    onOpen={() => setStateTouched(true)} 
+                    placeholder={'Selecione seu estado'}
+                    onChangeValue={(value) => {
+                    if (value) {
+                      const selectedState = stateList.find(item => item.value === value);
+                      const stateName = selectedState!.label;
+                      setCity(null);
+                      setOpenState(false)
+                      getCities(stateName);
+                    }
+                  }}
+                />
+                {state == null && stateTouched && (
+                    <Text style={{color: 'red'}}>É necessário selecionar um estado</Text>
+                )}                
+
+              <DropDownPicker 
+                textStyle={styles.pickerInput}
+                    open={openCity}
+                    value={city}
+                    items={cityList}
+                    setOpen={setOpenCity}
+                    setValue={setCity}
+                    setItems={setCityList}
+                    listMode="MODAL"
+                    disabled={!state} 
+                    onOpen={() => setCityTouched(true)} 
+                    style={[styles.input]}
+                    placeholder={'Selecione sua cidade'}
+                />
+                {city == null && cityTouched && state != null && (
+                  <View>
+                    <Text style={{color: 'red'}}>É necessário selecionar uma cidade</Text>
+                  </View>
+                ) }                
+
+
           </View>
 
-          <TouchableOpacity style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 100, marginTop: 50, 
+          <TouchableOpacity style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 90, marginTop: 50, 
   }}>
-              <Text style={{textAlign: 'center', fontFamily: 'PoppinsMedium', fontSize: 25, color: Colors.creme}}>Login</Text>
+              <Text style={{textAlign: 'center', fontFamily: 'PoppinsMedium', fontSize: 25, color: Colors.creme}}>Cadastrar</Text>
           </TouchableOpacity>
 
         </View>
@@ -94,9 +169,24 @@ const styles = StyleSheet.create({
   fieldsContainer: {
     paddingTop: 10,
     gap: 0,
+    flex: 1,
+  },
+  pickerInput: {
+      fontFamily: 'PoppinsRegular',
+      fontSize: 17,
+      color: Colors.amarelo
+
+
   },
   input: {
-    fontFamily: 'PoppinsRegular'
-  }
+      borderWidth: 2,
+      borderRadius: 10,
+      borderColor: Colors.amarelo,
+      paddingLeft: 20,
+      height: 50,
+    },
+    inputContainer: {
+      borderBottomWidth: 0,
+    }
 
 });

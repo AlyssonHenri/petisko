@@ -11,6 +11,7 @@ export default function LoginInput({placeholder, errorMessage, isPasswd = false,
         return (
             <View>
                 <Input inputStyle={styles.input}
+                        containerStyle={{paddingHorizontal: 0}}
                         inputContainerStyle={styles.inputContainer}
                         placeholder={placeholder}
                         placeholderTextColor={Colors.amarelo}
@@ -40,6 +41,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     borderBottomWidth: 0,
+    width: '100%'
   }
 
 });
