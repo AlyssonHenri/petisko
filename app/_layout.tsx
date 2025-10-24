@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { isNavbarActive } from '@/controllers/navbar-controller';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -24,6 +25,14 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    PoppinsBold: require('../assets/fonts/Poppins/Poppins-Bold.ttf'),
+    PoppinsSemiBold: require('../assets/fonts/Poppins/Poppins-SemiBold.ttf'),
+    PoppinsRegular: require('../assets/fonts/Poppins/Poppins-Regular.ttf'),
+    PoppinsMedium: require('../assets/fonts/Poppins/Poppins-Medium.ttf'),
+
+
+
+
     ...FontAwesome.font,
   });
 
@@ -49,10 +58,13 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={DefaultTheme}>
+
       <Stack>
+        {/* <Stack.Screen name="modal" options={{ presentation: 'modal' }} /> */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+
       </Stack>
     </ThemeProvider>
   );
