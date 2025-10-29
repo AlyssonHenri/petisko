@@ -38,6 +38,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name='register'
+        options={{
+          title: 'Tab Tree',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerRight: () => (
+            null
+          )
+        }}
+      />
+     
+      <Tabs.Screen
         name="two"
         options={{
           title: 'Tab Two',

@@ -1,10 +1,9 @@
 import { Image, Keyboard, StyleSheet, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
-import { Input, Icon } from '@rneui/themed';
 import LoginInput from '@/components/custom-login-input';
 import { useState } from 'react';
+import { router } from 'expo-router';
 
 
 
@@ -33,7 +32,7 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity>
-              <Text style={{textAlign: 'right', fontFamily: 'PoppinsSemiBold', marginRight: 10, color: Colors.azul}}>Esqueci minha senha</Text>
+              <Text onPress={() => router.push('/register')} style={{textAlign: 'right', fontFamily: 'PoppinsSemiBold', marginRight: 10, color: Colors.azul}}>Cadastre-se</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 100, marginTop: 50, 

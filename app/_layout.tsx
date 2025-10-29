@@ -29,6 +29,7 @@ export default function RootLayout() {
     PoppinsSemiBold: require('../assets/fonts/Poppins/Poppins-SemiBold.ttf'),
     PoppinsRegular: require('../assets/fonts/Poppins/Poppins-Regular.ttf'),
     PoppinsMedium: require('../assets/fonts/Poppins/Poppins-Medium.ttf'),
+    PoppinsExtraLight: require('../assets/fonts/Poppins/Poppins-ExtraLight.ttf'),
 
 
 
