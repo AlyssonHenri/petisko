@@ -3,10 +3,38 @@ import { Input, Icon } from '@rneui/themed';
 import Colors from "@/constants/Colors";
 import { useState } from "react";
 
-export default function LoginInput({placeholder, errorMessage, isPasswd = false, outputFunc }:
-    {placeholder: string, errorMessage: string, isPasswd?: boolean, outputFunc: (value: string) => void}){
+export default function LoginInput({
+    placeholder, 
+    errorMessage, 
+    isPasswd = false, 
+    outputFunc, 
+    onFocus, 
+    showError = false 
+}: {
+    placeholder: string, 
+    errorMessage: string, 
+    isPasswd?: boolean, 
+    outputFunc: (value: string) => void,
+    onFocus?: () => void,
+    showError?: boolean
+}){
         const [value, setValue] = useState('')
         const [isTouched, setTouched] = useState(false)
+
+        const handleChangeText = (text: string) => {
+            setValue(text);
+            outputFunc(text);
+        };
+
+        const handleFocus = () => {
+            if (onFocus) {
+                onFocus();
+            }
+        };
+
+        const handleBlur = () => {
+            setTouched(true);
+        };
 
         return (
             <View>
@@ -17,9 +45,10 @@ export default function LoginInput({placeholder, errorMessage, isPasswd = false,
                         placeholderTextColor={Colors.amarelo}
                         selectionColor={Colors.laranja}
                         errorStyle={{ color: 'red' }}
-                        errorMessage={value.length == 0 && isTouched ? errorMessage : ''}
-                        onBlur={() => setTouched(true)} 
-                        onChangeText={(text: string)=> setValue(text)}
+                        errorMessage={showError || (value.length == 0 && isTouched) ? errorMessage : ''}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur} 
+                        onChangeText={handleChangeText}
                         keyboardType="default"     
                         secureTextEntry={isPasswd} 
                     />

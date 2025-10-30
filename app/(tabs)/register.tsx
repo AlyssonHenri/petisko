@@ -3,22 +3,25 @@ import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import RegisterInput from '@/components/custom-register-input';
 import { useEffect, useState } from 'react';
-import { IState } from '@/interfaces/country';
 import getStates, { getCitiesFromState } from '@/controllers/states-controller';
 import DropDownPicker from 'react-native-dropdown-picker';
-
-
 
 
 export default function RegisterScreen() {
   const [user, setUsername] = useState('')
   const [password, setPassword] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [userName, setUserName] = useState('');
   const [openState, setOpenState] = useState(false);
   const [openCity, setOpenCity] = useState(false);
   const [state, setState] = useState(null);
   const [city, setCity] = useState(null);
   const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
   const [cityList, setCityList] = useState<{ label: string; value: string }[]>([]);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [cpfTouched, setCpfTouched] = useState(false);
+  const [userNameTouched, setUserNameTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [stateTouched, setStateTouched] = useState(false);
   const [cityTouched, setCityTouched] = useState(false);
 
@@ -43,6 +46,32 @@ export default function RegisterScreen() {
     setCityList(formatted);
   }
 
+  const isFormValid = () => {
+    return user.trim() !== '' && 
+           cpf.trim() !== '' && 
+           userName.trim() !== '' && 
+           password.trim() !== '' && 
+           state !== null && 
+           city !== null;
+  };
+
+  const markAllFieldsAsTouched = () => {
+    setNameTouched(true);
+    setCpfTouched(true);
+    setUserNameTouched(true);
+    setPasswordTouched(true);
+    setStateTouched(true);
+    setCityTouched(true);
+  };
+
+  const handleRegisterPress = () => {
+    if (!isFormValid()) {
+      markAllFieldsAsTouched();
+      return;
+    }
+    console.log('Cadastro realizado com sucesso!');
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
@@ -50,32 +79,59 @@ export default function RegisterScreen() {
             <Text style={[styles.titleLogo, styles.title]}>
                 pet<Text style={[styles.titleLogoMini, styles.title]}>isko</Text>
             </Text>
-            <Image style={{height: 60, width: 50}} resizeMode='contain' source={require('../../assets/logo/logo.png')} />
+            <Image style={styles.logoImage} resizeMode='contain' source={require('../../assets/logo/logo.png')} />
         </View>
+        
         <View style={styles.content}>
-
             <Text style={[styles.titleList]}>
                 cadastro
             </Text>
 
-          <View style={styles.fieldsContainer}>
-            <RegisterInput outputFunc={(dado)=> setUsername(dado)} placeholder='Digite seu nome' errorMessage='O campo deve estar preenchido.' />
-            <RegisterInput outputFunc={(dado)=> setPassword(dado)} placeholder='Digite seu CPF' errorMessage='O campo deve estar preenchido.' />
-            <RegisterInput outputFunc={(dado)=> setPassword(dado)} placeholder='Digite o usuário' errorMessage='O campo deve estar preenchido.' />
-            <RegisterInput outputFunc={(dado)=> setPassword(dado)} isPasswd={true} placeholder='Digite a senha' errorMessage='O campo deve estar preenchido.' />
-              <DropDownPicker
-                textStyle={styles.pickerInput}
-                    open={openState}
-                    value={state}
-                    items={stateList}
-                    setOpen={setOpenState}
-                    setValue={setState}
-                    setItems={setStateList}
-                    style={[{marginBottom: 25}, styles.input]}
-                    listMode="MODAL"
-                    onOpen={() => setStateTouched(true)} 
-                    placeholder={'Selecione seu estado'}
-                    onChangeValue={(value) => {
+            <View style={styles.fieldsContainer}>
+              <RegisterInput 
+                outputFunc={(dado) => setUsername(dado)} 
+                onFocus={() => setNameTouched(true)}
+                placeholder='Digite seu nome' 
+                errorMessage='O campo deve estar preenchido.' 
+                showError={nameTouched && user.trim() === ''}
+              />
+              <RegisterInput 
+                outputFunc={(dado) => setCpf(dado)} 
+                onFocus={() => setCpfTouched(true)}
+                placeholder='Digite seu CPF' 
+                errorMessage='O campo deve estar preenchido.' 
+                showError={cpfTouched && cpf.trim() === ''}
+              />
+              <RegisterInput 
+                outputFunc={(dado) => setUserName(dado)} 
+                onFocus={() => setUserNameTouched(true)}
+                placeholder='Digite o usuário' 
+                errorMessage='O campo deve estar preenchido.' 
+                showError={userNameTouched && userName.trim() === ''}
+              />
+              <RegisterInput 
+                outputFunc={(dado) => setPassword(dado)} 
+                onFocus={() => setPasswordTouched(true)}
+                isPasswd={true} 
+                placeholder='Digite a senha' 
+                errorMessage='O campo deve estar preenchido.' 
+                showError={passwordTouched && password.trim() === ''}
+              />
+              
+              <View style={styles.dropdownWrapper}>
+                <DropDownPicker
+                  textStyle={styles.pickerInput}
+                  open={openState}
+                  value={state}
+                  items={stateList}
+                  setOpen={setOpenState}
+                  setValue={setState}
+                  setItems={setStateList}
+                  style={[styles.input]}
+                  listMode="MODAL"
+                  onOpen={() => setStateTouched(true)} 
+                  placeholder={'Selecione seu estado'}
+                  onChangeValue={(value) => {
                     if (value) {
                       const selectedState = stateList.find(item => item.value === value);
                       const stateName = selectedState!.label;
@@ -86,37 +142,48 @@ export default function RegisterScreen() {
                   }}
                 />
                 {state == null && stateTouched && (
-                    <Text style={{color: 'red'}}>É necessário selecionar um estado</Text>
-                )}                
+                  <Text style={styles.dropdownErrorText}>É necessário selecionar um estado</Text>
+                )}
+              </View>
 
-              <DropDownPicker 
-                textStyle={styles.pickerInput}
-                    open={openCity}
-                    value={city}
-                    items={cityList}
-                    setOpen={setOpenCity}
-                    setValue={setCity}
-                    setItems={setCityList}
-                    listMode="MODAL"
-                    disabled={!state} 
-                    onOpen={() => setCityTouched(true)} 
-                    style={[styles.input]}
-                    placeholder={'Selecione sua cidade'}
+              <View style={styles.dropdownWrapper}>
+                <DropDownPicker 
+                  textStyle={styles.pickerInput}
+                  open={openCity}
+                  value={city}
+                  items={cityList}
+                  setOpen={setOpenCity}
+                  setValue={setCity}
+                  setItems={setCityList}
+                  listMode="MODAL"
+                  disabled={!state} 
+                  onOpen={() => setCityTouched(true)} 
+                  style={[styles.input]}
+                  placeholder={'Selecione sua cidade'}
                 />
                 {city == null && cityTouched && state != null && (
-                  <View>
-                    <Text style={{color: 'red'}}>É necessário selecionar uma cidade</Text>
-                  </View>
-                ) }                
+                  <Text style={styles.dropdownErrorText}>É necessário selecionar uma cidade</Text>
+                )}
+              </View>                
+            </View>
 
-
-          </View>
-
-          <TouchableOpacity style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 90, marginTop: 50, 
-  }}>
-              <Text style={{textAlign: 'center', fontFamily: 'PoppinsMedium', fontSize: 25, color: Colors.creme}}>Cadastrar</Text>
-          </TouchableOpacity>
-
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                style={[
+                  styles.registerButton, 
+                  !isFormValid() && styles.registerButtonDisabled
+                ]}
+                onPress={handleRegisterPress}
+                disabled={false}
+              >
+                <Text style={[
+                  styles.registerButtonText,
+                  !isFormValid() && styles.registerButtonTextDisabled
+                ]}>
+                  Cadastrar
+                </Text>
+              </TouchableOpacity>
+            </View>
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -135,8 +202,6 @@ const styles = StyleSheet.create({
     fontSize: 36,
     color: Colors.laranja
   },
-
- 
   header: {
     display: 'flex',
     flexDirection: 'row',
@@ -147,7 +212,11 @@ const styles = StyleSheet.create({
     gap: 2,
     paddingTop: 10
   },
-   titleLogo: {
+  logoImage: {
+    height: 60, 
+    width: 50
+  },
+  titleLogo: {
     fontFamily: 'PoppinsBold'
   },
   titleLogoMini: {
@@ -159,34 +228,87 @@ const styles = StyleSheet.create({
     fontSize: 60,
     color: Colors.laranja
   },
-
   content: {
-    flexGrow: 1,
+    flex: 1,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    justifyContent: 'space-between'
   },
-
   fieldsContainer: {
     paddingTop: 10,
     gap: 0,
     flex: 1,
   },
   pickerInput: {
-      fontFamily: 'PoppinsRegular',
-      fontSize: 17,
-      color: Colors.amarelo
-
-
+    fontFamily: 'PoppinsRegular',
+    fontSize: 17,
+    color: Colors.amarelo
   },
   input: {
-      borderWidth: 2,
-      borderRadius: 10,
-      borderColor: Colors.amarelo,
-      paddingLeft: 20,
-      height: 50,
+    borderWidth: 2,
+    borderRadius: 10,
+    borderColor: Colors.amarelo,
+    paddingLeft: 20,
+    height: 50,
+  },
+  dropdownMargin: {
+    marginBottom: 25
+  },
+  inputContainer: {
+    borderBottomWidth: 0,
+  },
+  dropdownWrapper: {
+    marginBottom: 15,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginTop: 5,
+    marginBottom: 10,
+    fontFamily: 'PoppinsRegular'
+  },
+  dropdownErrorText: {
+    color: 'red',
+    fontSize: 11,
+    marginTop: 5,
+    marginBottom: -10,
+    marginLeft: 7,
+    fontFamily: 'PoppinsRegular'
+  },
+  buttonContainer: {
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  registerButton: {
+    backgroundColor: Colors.laranja,
+    paddingVertical: 15,
+    paddingHorizontal: 60,
+    borderRadius: 100,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-    inputContainer: {
-      borderBottomWidth: 0,
-    }
-
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    minWidth: 200,
+    alignItems: 'center'
+  },
+  registerButtonDisabled: {
+    backgroundColor: '#cccccc',
+    shadowOpacity: 0.1,
+    elevation: 2,
+  },
+  registerButtonText: {
+    textAlign: 'center',
+    fontFamily: 'PoppinsMedium',
+    fontSize: 22,
+    color: Colors.creme
+  },
+  registerButtonTextDisabled: {
+    color: '#888888'
+  }
 });
