@@ -15,7 +15,7 @@ export default function PetiskoSplashScreen({ onFinish }: SplashScreen) {
   const scaleAnim = useRef(new Animated.Value(0.3)).current
   const logoFadeAnim = useRef(new Animated.Value(0)).current
   const pawBounceAnim = useRef(new Animated.Value(0)).current
-  const rotateAnim = useRef(new Animated.Value(0)).current
+  const rotateAnim = useRef(new Animated.Value(-1)).current
 
   useEffect(() => {
     Animated.sequence([
@@ -51,7 +51,7 @@ export default function PetiskoSplashScreen({ onFinish }: SplashScreen) {
         }),
       ]),
        
-      Animated.delay(500),
+      Animated.delay(200),
       
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -119,22 +119,10 @@ export default function PetiskoSplashScreen({ onFinish }: SplashScreen) {
           ]}
         >
           <Animated.View 
-            style={[
-              styles.pawBackground,
-              {
-                transform: [{ scale: bounceScale }],
-              }
-            ]} 
+            style={{transform: [{ scale: bounceScale }]}} 
           />
           
           <PawSVG />
-          
-          <View
-            style={styles.textContainer}
-          >
-            <Text style={styles.appName}>Petisko</Text>
-            <Text style={styles.tagline}>Para seu melhor amigo 🐾</Text>
-          </View>
         </Animated.View>
 
         <Animated.View 
