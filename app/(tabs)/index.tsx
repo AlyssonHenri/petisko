@@ -4,7 +4,8 @@ import Colors from '@/constants/Colors';
 import LoginInput from '@/components/custom-login-input';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import registerUser from '@/services/register'
+import registerUser from '@/services/register';
+
 
 
 export default function LoginScreen() {
@@ -34,7 +35,7 @@ export default function LoginScreen() {
               <Text onPress={() => router.push('/register')} style={{textAlign: 'right', fontFamily: 'PoppinsSemiBold', marginRight: 10, color: Colors.azul}}>Cadastre-se</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={()=> registerUser({"id": 1, "username": "user", "password": "password", "cpf": "19328", "state": "CE", "city": "alagoas"})} style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 100, marginTop: 50, 
+          <TouchableOpacity onPress={()=> registerUser({"id": 1, "username": "usessr", "password": "passworsd", "cpf": "119328", "state": "CsE", "city": "alagosas"})} style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 100, marginTop: 50, 
   }}>
               <Text style={{textAlign: 'center', fontFamily: 'PoppinsMedium', fontSize: 25, color: Colors.creme}}>Login</Text>
           </TouchableOpacity>
