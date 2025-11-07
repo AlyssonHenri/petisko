@@ -9,8 +9,8 @@ import loginUser from '@/services/login';
 
 
 export default function LoginScreen() {
-  const [user, setUsername] = useState('admin')
-  const [password, setPassword] = useState('admin')
+  const [user, setUsername] = useState('')
+  const [password, setPassword] = useState('')
 
   const handleLoginPress = (user: string, password: string) => {
     loginUser({"username": user, "password": password})

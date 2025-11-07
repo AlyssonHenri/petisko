@@ -16,7 +16,8 @@ export default function LoginInput({placeholder, errorMessage, isPasswd = false,
                         errorStyle={{ color: 'red' }}
                         errorMessage={value.length == 0 && isTouched ? errorMessage : ''}
                         onBlur={() => setTouched(true)} 
-                        onChangeText={(text: string)=> setValue(text)}
+                        onChangeText={(text: string)=> {setValue(text)
+                        outputFunc(text)}}
                         keyboardType="default"     
                         secureTextEntry={isPasswd} 
                         leftIcon={
