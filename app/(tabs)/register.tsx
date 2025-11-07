@@ -5,23 +5,25 @@ import RegisterInput from '@/components/custom-register-input';
 import { useEffect, useState } from 'react';
 import getStates, { getCitiesFromState } from '@/controllers/states-controller';
 import DropDownPicker from 'react-native-dropdown-picker';
-
+import registerUser from '@/services/register';
 
 export default function RegisterScreen() {
   const [user, setUsername] = useState('')
   const [password, setPassword] = useState('');
+  const [passwordCheck, setPasswordCheck] = useState('');
   const [cpf, setCpf] = useState('');
   const [userName, setUserName] = useState('');
   const [openState, setOpenState] = useState(false);
   const [openCity, setOpenCity] = useState(false);
-  const [state, setState] = useState(null);
-  const [city, setCity] = useState(null);
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
   const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
   const [cityList, setCityList] = useState<{ label: string; value: string }[]>([]);
   const [nameTouched, setNameTouched] = useState(false);
   const [cpfTouched, setCpfTouched] = useState(false);
   const [userNameTouched, setUserNameTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const [passwordCheckTouched, setPasswordCheckTouched] = useState(false);
   const [stateTouched, setStateTouched] = useState(false);
   const [cityTouched, setCityTouched] = useState(false);
 
@@ -50,9 +52,10 @@ export default function RegisterScreen() {
     return user.trim() !== '' && 
            cpf.trim() !== '' && 
            userName.trim() !== '' && 
-           password.trim() !== '' && 
-           state !== null && 
-           city !== null;
+           password.trim() !== '' &&
+           passwordCheck.trim() !== '' && 
+           state.trim() !== '' && 
+           city.trim() !== '';
   };
 
   const markAllFieldsAsTouched = () => {
@@ -69,6 +72,7 @@ export default function RegisterScreen() {
       markAllFieldsAsTouched();
       return;
     }
+    registerUser({"name": user, "username": userName, "password": password, "cpf": cpf, "state": state, "city": city})
     console.log('Cadastro realizado com sucesso!');
   };
 
@@ -115,7 +119,15 @@ export default function RegisterScreen() {
                 isPasswd={true} 
                 placeholder='Digite a senha' 
                 errorMessage='O campo deve estar preenchido.' 
-                showError={passwordTouched && password.trim() === ''}
+                showError={passwordTouched && password.trim() === '' || password !== passwordCheck && passwordCheck.trim() !== ''}
+              />
+              <RegisterInput 
+                outputFunc={(dado) => setPasswordCheck(dado)} 
+                onFocus={() => setPasswordCheckTouched(true)}
+                isPasswd={true} 
+                placeholder='Repita sua senha' 
+                errorMessage='O campo deve estar preenchido.' 
+                showError={passwordCheckTouched && passwordCheck.trim() === '' || password !== passwordCheck && passwordCheck.trim() !== ''}
               />
               
               <View style={styles.dropdownWrapper}>
@@ -135,7 +147,7 @@ export default function RegisterScreen() {
                     if (value) {
                       const selectedState = stateList.find(item => item.value === value);
                       const stateName = selectedState!.label;
-                      setCity(null);
+                      setCity('');
                       setOpenState(false)
                       getCities(stateName);
                     }

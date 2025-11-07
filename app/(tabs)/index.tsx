@@ -4,13 +4,17 @@ import Colors from '@/constants/Colors';
 import LoginInput from '@/components/custom-login-input';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import registerUser from '@/services/register';
+import loginUser from '@/services/login';
 
 
 
 export default function LoginScreen() {
-  const [user, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [user, setUsername] = useState('admin')
+  const [password, setPassword] = useState('admin')
+
+  const handleLoginPress = (user: string, password: string) => {
+    loginUser({"username": user, "password": password})
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -26,16 +30,16 @@ export default function LoginScreen() {
         <View style={styles.content}>
 
           <View style={styles.fieldsContainer}>
-          <LoginInput outputFunc={(dado)=> setUsername(dado)} placeholder='Digite seu usuário' errorMessage='O usuário precisa estar digitado.' />
+          <LoginInput outputFunc={(dado)=> {setUsername(dado)}} placeholder='Digite seu usuário' errorMessage='O usuário precisa estar digitado.' />
           <LoginInput outputFunc={(dado)=> setPassword(dado)} isPasswd={true} placeholder='Digite sua senha' errorMessage='O usuário precisa estar digitado.' />
 
           </View>
 
-          <TouchableOpacity>
-              <Text onPress={() => router.push('/register')} style={{textAlign: 'right', fontFamily: 'PoppinsSemiBold', marginRight: 10, color: Colors.azul}}>Cadastre-se</Text>
+          <TouchableOpacity onPress={() => router.push('/register')}>
+              <Text style={{textAlign: 'right', fontFamily: 'PoppinsSemiBold', marginRight: 10, color: Colors.azul}}>Cadastre-se</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={()=> registerUser({"id": 1, "username": "usessr", "password": "passworsd", "cpf": "119328", "state": "CsE", "city": "alagosas"})} style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 100, marginTop: 50, 
+          <TouchableOpacity onPress={() => handleLoginPress(user, password)}  style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 100, marginTop: 50, 
   }}>
               <Text style={{textAlign: 'center', fontFamily: 'PoppinsMedium', fontSize: 25, color: Colors.creme}}>Login</Text>
           </TouchableOpacity>
