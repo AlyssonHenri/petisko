@@ -7,6 +7,11 @@ import getStates, { getCitiesFromState } from '@/controllers/states-controller';
 import DropDownPicker from 'react-native-dropdown-picker';
 import registerUser from '@/services/register';
 
+interface ValidationResult {
+  isValid: boolean;
+  message: string;
+}
+
 export default function RegisterScreen() {
   const [user, setUsername] = useState('')
   const [password, setPassword] = useState('');
@@ -48,14 +53,153 @@ export default function RegisterScreen() {
     setCityList(formatted);
   }
 
+  const validateName = (name: string): ValidationResult => {
+    if (!name.trim()) {
+      return { isValid: false, message: 'Nome é obrigatório' };
+    }
+    if (name.trim().length < 2) {
+      return { isValid: false, message: 'Nome deve ter pelo menos 2 caracteres' };
+    }
+    if (name.trim().length > 100) {
+      return { isValid: false, message: 'Nome deve ter no máximo 100 caracteres' };
+    }
+
+    const nameRegex = /^[a-zA-ZÀ-ÿ\s]+$/;
+    if (!nameRegex.test(name.trim())) {
+      return { isValid: false, message: 'Nome deve conter apenas letras' };
+    }
+    return { isValid: true, message: '' };
+  };
+
+  const validateCPF = (cpf: string): ValidationResult => {
+    if (!cpf.trim()) {
+      return { isValid: false, message: 'CPF é obrigatório' };
+    }
+
+    const cpfClean = cpf.replace(/\D/g, '');
+
+    if (cpfClean.length !== 11) {
+      return { isValid: false, message: 'CPF deve ter 11 dígitos' };
+    }
+
+    if (/^(\d)\1+$/.test(cpfClean)) {
+      return { isValid: false, message: 'CPF inválido' };
+    }
+
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(cpfClean.charAt(i)) * (10 - i);
+    }
+    let remainder = (sum * 10) % 11;
+    if (remainder === 10) remainder = 0;
+    if (remainder !== parseInt(cpfClean.charAt(9))) {
+      return { isValid: false, message: 'CPF inválido' };
+    }
+
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(cpfClean.charAt(i)) * (11 - i);
+    }
+    remainder = (sum * 10) % 11;
+    if (remainder === 10) remainder = 0;
+    if (remainder !== parseInt(cpfClean.charAt(10))) {
+      return { isValid: false, message: 'CPF inválido' };
+    }
+
+    return { isValid: true, message: '' };
+  };
+
+  const validateUsername = (username: string): ValidationResult => {
+    if (!username.trim()) {
+      return { isValid: false, message: 'Nome de usuário é obrigatório' };
+    }
+    if (username.trim().length < 3) {
+      return { isValid: false, message: 'Nome de usuário deve ter pelo menos 3 caracteres' };
+    }
+    if (username.trim().length > 30) {
+      return { isValid: false, message: 'Nome de usuário deve ter no máximo 30 caracteres' };
+    }
+
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    if (!usernameRegex.test(username.trim())) {
+      return { isValid: false, message: 'Nome de usuário deve conter apenas letras, números e _' };
+    }
+    return { isValid: true, message: '' };
+  };
+
+  const validatePassword = (password: string): ValidationResult => {
+    if (!password) {
+      return { isValid: false, message: 'Senha é obrigatória' };
+    }
+    if (password.length < 8) {
+      return { isValid: false, message: 'Senha deve ter pelo menos 8 caracteres' };
+    }
+    if (password.length > 50) {
+      return { isValid: false, message: 'Senha deve ter no máximo 50 caracteres' };
+    }
+
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+
+    if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+      return { isValid: false, message: 'Senha deve conter maiúscula, minúscula e número' };
+    }
+    return { isValid: true, message: '' };
+  };
+
+  const validatePasswordConfirmation = (password: string, passwordCheck: string): ValidationResult => {
+    if (!passwordCheck) {
+      return { isValid: false, message: 'Confirmação de senha é obrigatória' };
+    }
+    if (password !== passwordCheck) {
+      return { isValid: false, message: 'As senhas não coincidem' };
+    }
+    return { isValid: true, message: '' };
+  };
+
+  const validateState = (state: string): ValidationResult => {
+    if (!state.trim()) {
+      return { isValid: false, message: 'Estado é obrigatório' };
+    }
+    return { isValid: true, message: '' };
+  };
+
+  const validateCity = (city: string): ValidationResult => {
+    if (!city.trim()) {
+      return { isValid: false, message: 'Cidade é obrigatória' };
+    }
+    return { isValid: true, message: '' };
+  };
+
+
+  const formatCPF = (value: string): string => {
+    const cpf = value.replace(/\D/g, '');
+
+    if (cpf.length <= 3) {
+      return cpf;
+    } else if (cpf.length <= 6) {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
+    } else if (cpf.length <= 9) {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
+    } else {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
+    }
+  };
+
+  const handleCPFChange = (value: string) => {
+    const formattedCPF = formatCPF(value);
+    setCpf(formattedCPF);
+  };
+
   const isFormValid = () => {
-    return user.trim() !== '' && 
-           cpf.trim() !== '' && 
-           userName.trim() !== '' && 
-           password.trim() !== '' &&
-           passwordCheck.trim() !== '' && 
-           state.trim() !== '' && 
-           city.trim() !== '';
+    return validateName(user).isValid && 
+           validateCPF(cpf).isValid && 
+           validateUsername(userName).isValid && 
+           validatePassword(password).isValid &&
+           validatePasswordConfirmation(password, passwordCheck).isValid && 
+           validateState(state).isValid && 
+           validateCity(city).isValid;
   };
 
   const markAllFieldsAsTouched = () => {
@@ -96,38 +240,38 @@ export default function RegisterScreen() {
                 outputFunc={(dado) => setUsername(dado)} 
                 onFocus={() => setNameTouched(true)}
                 placeholder='Digite seu nome' 
-                errorMessage='O campo deve estar preenchido.' 
-                showError={nameTouched && user.trim() === ''}
+                errorMessage={validateName(user).message} 
+                showError={nameTouched && !validateName(user).isValid}
               />
               <RegisterInput 
-                outputFunc={(dado) => setCpf(dado)} 
+                outputFunc={handleCPFChange} 
                 onFocus={() => setCpfTouched(true)}
                 placeholder='Digite seu CPF' 
-                errorMessage='O campo deve estar preenchido.' 
-                showError={cpfTouched && cpf.trim() === ''}
+                errorMessage={validateCPF(cpf.replace(/\D/g, '')).message} 
+                showError={cpfTouched && !validateCPF(cpf.replace(/\D/g, '')).isValid}
               />
               <RegisterInput 
                 outputFunc={(dado) => setUserName(dado)} 
                 onFocus={() => setUserNameTouched(true)}
                 placeholder='Digite o usuário' 
-                errorMessage='O campo deve estar preenchido.' 
-                showError={userNameTouched && userName.trim() === ''}
+                errorMessage={validateUsername(userName).message} 
+                showError={userNameTouched && !validateUsername(userName).isValid}
               />
               <RegisterInput 
                 outputFunc={(dado) => setPassword(dado)} 
                 onFocus={() => setPasswordTouched(true)}
                 isPasswd={true} 
                 placeholder='Digite a senha' 
-                errorMessage='O campo deve estar preenchido.' 
-                showError={passwordTouched && password.trim() === '' || password !== passwordCheck && passwordCheck.trim() !== ''}
+                errorMessage={validatePassword(password).message} 
+                showError={passwordTouched && !validatePassword(password).isValid}
               />
               <RegisterInput 
                 outputFunc={(dado) => setPasswordCheck(dado)} 
                 onFocus={() => setPasswordCheckTouched(true)}
                 isPasswd={true} 
                 placeholder='Repita sua senha' 
-                errorMessage='O campo deve estar preenchido.' 
-                showError={passwordCheckTouched && passwordCheck.trim() === '' || password !== passwordCheck && passwordCheck.trim() !== ''}
+                errorMessage={validatePasswordConfirmation(password, passwordCheck).message} 
+                showError={passwordCheckTouched && !validatePasswordConfirmation(password, passwordCheck).isValid}
               />
               
               <View style={styles.dropdownWrapper}>
@@ -153,8 +297,8 @@ export default function RegisterScreen() {
                     }
                   }}
                 />
-                {state == null && stateTouched && (
-                  <Text style={styles.dropdownErrorText}>É necessário selecionar um estado</Text>
+                {stateTouched && !validateState(state).isValid && (
+                  <Text style={styles.dropdownErrorText}>{validateState(state).message}</Text>
                 )}
               </View>
 
@@ -173,8 +317,8 @@ export default function RegisterScreen() {
                   style={[styles.input]}
                   placeholder={'Selecione sua cidade'}
                 />
-                {city == null && cityTouched && state != null && (
-                  <Text style={styles.dropdownErrorText}>É necessário selecionar uma cidade</Text>
+                {cityTouched && !validateCity(city).isValid && state && (
+                  <Text style={styles.dropdownErrorText}>{validateCity(city).message}</Text>
                 )}
               </View>                
             </View>
