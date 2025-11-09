@@ -1,7 +1,8 @@
+import CardPet from "@/components/card-pet";
 import { View } from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { FlatList, Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 
 
 export default function ProfileScreen() {
@@ -27,11 +28,15 @@ export default function ProfileScreen() {
 
 
             </View>
-            <View style={styles.details}>
-                <Text style={{fontFamily: 'NunitoExtraLight', fontSize: 32, textAlign: 'center'}}>Meus Pets</Text>
 
-                
-            </View>
+            <Text style={{fontFamily: 'NunitoExtraLight', fontSize: 32, textAlign: 'center', marginTop: 20}}>Meus Pets</Text>    
+            
+            <ScrollView style={{padding: 20}}>
+
+            <CardPet name={'Robert'} imageSrc={'../../assets/images/mockdog.png'} typePet={'Caramelo'} avaliable={true} canEdit={true} ></CardPet>
+            </ScrollView>
+
+
       
         </ScrollView>
     </ImageBackground>
