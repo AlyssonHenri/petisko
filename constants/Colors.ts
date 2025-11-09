@@ -25,6 +25,7 @@ export default {
   amarelo: '#F2B749',
   creme: '#FBF0DE',
   laranja: '#F27B50',
+  preto: '#2C2A27'
 
 
 };
