@@ -21,7 +21,7 @@ export default function ProfileScreen() {
                     <Text style={styles.username}>@rafabaladeira</Text>
                 </View>
                 <TouchableOpacity onPress={() => {}}  style={styles.editarPerfil}>
-                    <Text style={{textAlign: 'center', fontFamily: 'PoppinsMedium', fontSize: 16, color: Colors.creme}}>Editar Perfil  <FontAwesome name="edit" size={20} color="white" />
+                    <Text style={{textAlign: 'center', fontFamily: 'NunitoMedium', fontSize: 16, color: Colors.creme}}>Editar Perfil  <FontAwesome name="edit" size={20} color="white" />
 
 </Text>
                 </TouchableOpacity>
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     editarPerfil: {
-        backgroundColor: Colors.laranja, 
+        backgroundColor: Colors.laranjaVariado, 
         padding: 10,
         borderRadius: 10,
         flex: 1,
