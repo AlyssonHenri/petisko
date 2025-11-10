@@ -13,7 +13,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('')
 
   const handleLoginPress = (user: string, password: string) => {
-    loginUser({"username": user, "password": password})
+    //loginUser({"username": user, "password": password})
+    router.push('/profile')
   };
 
   return (
@@ -39,8 +40,8 @@ export default function LoginScreen() {
               <Text style={{textAlign: 'right', fontFamily: 'PoppinsSemiBold', marginRight: 10, color: Colors.azul}}>Cadastre-se</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => handleLoginPress(user, password)}  style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 100, marginTop: 50, 
-  }}>
+          <TouchableOpacity 
+          onPress={() => handleLoginPress(user, password)}  style={{backgroundColor: Colors.laranja, padding: 10, borderRadius: 100,     boxShadow: '0px 2px 5px 0px rgba(0, 0, 0, 0.5)', marginHorizontal: 100, marginTop: 50, }}>
               <Text style={{textAlign: 'center', fontFamily: 'PoppinsMedium', fontSize: 25, color: Colors.creme}}>Login</Text>
           </TouchableOpacity>
 
