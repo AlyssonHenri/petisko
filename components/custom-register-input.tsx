@@ -1,7 +1,9 @@
 import { StyleSheet, View } from "react-native"
-import { Input, Icon } from '@rneui/themed';
 import Colors from "@/constants/Colors";
 import { useState } from "react";
+import { TextInput } from "react-native-paper";
+import { MD3LightTheme } from "react-native-paper";
+
 
 export default function LoginInput({
     placeholder, 
@@ -20,6 +22,23 @@ export default function LoginInput({
 }){
         const [value, setValue] = useState('')
         const [isTouched, setTouched] = useState(false)
+        const theme = {
+        ...MD3LightTheme,
+        colors: {
+            ...MD3LightTheme.colors,
+            primary: Colors.laranja,        
+            outline: Colors.laranja,        
+            onSurface: Colors.amarelo,       
+            onSurfaceVariant: Colors.amarelo, 
+            surface: 'white',                
+            background: 'white',
+        },
+  fonts: {
+    ...MD3LightTheme.fonts,
+    bodyLarge: { ...MD3LightTheme.fonts.bodyLarge, fontFamily: "PoppinsRegular" },
+  },
+};
+
 
         const handleChangeText = (text: string) => {
             setValue(text);
@@ -38,7 +57,21 @@ export default function LoginInput({
 
         return (
             <View>
-                <Input inputStyle={styles.input}
+
+                <TextInput
+                      style={styles.input}
+                      mode="outlined"
+                      label={placeholder}
+                      value={value}
+                      onChangeText={handleChangeText}
+                      onBlur={handleBlur}
+                      error={value.length === 0 && isTouched}
+                      secureTextEntry={isPasswd}
+                      keyboardType="default"
+                      theme={theme} 
+
+                    />
+                {/* <Input inputStyle={styles.input}
                         containerStyle={{paddingHorizontal: 0}}
                         inputContainerStyle={styles.inputContainer}
                         placeholder={placeholder}
@@ -51,7 +84,7 @@ export default function LoginInput({
                         onChangeText={handleChangeText}
                         keyboardType="default"     
                         secureTextEntry={isPasswd} 
-                    />
+                    /> */}
             </View>)
     
 }
@@ -61,9 +94,6 @@ const styles = StyleSheet.create({
   input: {
     fontFamily: 'PoppinsRegular',
     backgroundColor: 'white',
-    borderWidth: 2,
-    borderRadius: 10,
-    borderColor: Colors.amarelo,
     paddingLeft: 20,
     height: 50,
     color: Colors.amarelo

@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   dropdownWrapper: {
-    marginBottom: 20,
+    marginTop: 7,
   },
   errorText: {
     color: 'red',
