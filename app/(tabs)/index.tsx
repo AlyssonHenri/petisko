@@ -2,18 +2,16 @@ import { Image, Keyboard, StyleSheet, TouchableOpacity, TouchableWithoutFeedback
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import LoginInput from '@/components/custom-login-input';
+import loginUser from '@/services/login';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import loginUser from '@/services/login';
-
-
 
 export default function LoginScreen() {
   const [user, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
   const handleLoginPress = (user: string, password: string) => {
-    //loginUser({"username": user, "password": password})
+    loginUser({"username": user, "password": password})
     router.push('/profile')
   };
 

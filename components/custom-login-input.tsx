@@ -11,12 +11,24 @@ export default function LoginInput({placeholder, errorMessage, isPasswd = false,
         const [value, setValue] = useState('')
         const [isTouched, setTouched] = useState(false)
         const theme = {
-        ...MD3LightTheme,
-        fonts: {
-          ...MD3LightTheme.fonts,
-          bodyLarge: { ...MD3LightTheme.fonts.bodyLarge, fontFamily: "PoppinsRegular" },
-        },
-      };
+          ...MD3LightTheme,
+          roundness: 10,
+          isV3: true,
+          colors: {
+              ...MD3LightTheme.colors,
+              primary: Colors.amarelo,        
+              outline: Colors.amarelo,        
+              onSurface: Colors.amarelo,       
+              onSurfaceVariant: Colors.amarelo, 
+              surface: 'white',                
+              background: 'white',
+              error: Colors.amarelo,
+
+          },
+          fonts: {...MD3LightTheme.fonts,
+                  bodyLarge: { ...MD3LightTheme.fonts.bodyLarge, fontFamily: "PoppinsRegular", 'fontSize': 16 },
+          },
+        };
 
 
         return (

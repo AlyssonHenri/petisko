@@ -56,6 +56,10 @@ export default function RegisterScreen() {
   }
 
   const validateName = (name: string): ValidationResult => {
+    if(!nameTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!name.trim()) {
       return { isValid: false, message: 'Nome é obrigatório' };
     }
@@ -78,7 +82,7 @@ export default function RegisterScreen() {
     let sum;
 
     if(!cpfTouched) {
-      return { isValid: true, message: ' ' };
+      return { isValid: true, message: '' };
     }
 
     if (!cpf.trim()) {
@@ -114,10 +118,14 @@ export default function RegisterScreen() {
       return { isValid: false, message: 'CPF inválido' };
     }
 
-    return { isValid: true, message: ' ' };
+    return { isValid: true, message: '' };
   };
 
   const validateUsername = (username: string): ValidationResult => {
+    if(!userNameTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!username.trim()) {
       return { isValid: false, message: 'Nome de usuário é obrigatório' };
     }
@@ -136,6 +144,10 @@ export default function RegisterScreen() {
   };
 
   const validatePassword = (password: string): ValidationResult => {
+    if(!passwordTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!password) {
       return { isValid: false, message: 'Senha é obrigatória' };
     }
@@ -157,6 +169,10 @@ export default function RegisterScreen() {
   };
 
   const validatePasswordConfirmation = (password: string, passwordCheck: string): ValidationResult => {
+    if(!passwordCheckTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!passwordCheck) {
       return { isValid: false, message: 'Confirmação de senha é obrigatória' };
     }
@@ -167,6 +183,10 @@ export default function RegisterScreen() {
   };
 
   const validateState = (state: string): ValidationResult => {
+    if(!validateState) {
+      return { isValid: true, message: '' };
+    }
+
     if (!state.trim()) {
       return { isValid: false, message: 'Estado é obrigatório' };
     }
@@ -174,6 +194,10 @@ export default function RegisterScreen() {
   };
 
   const validateCity = (city: string): ValidationResult => {
+    if(!cityTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!city.trim()) {
       return { isValid: false, message: 'Cidade é obrigatória' };
     }
@@ -226,7 +250,7 @@ export default function RegisterScreen() {
             <View style={styles.fieldsContainer}>
               <RegisterInput 
                 outputFunc={(dado) => setUsername(dado)} 
-                onFocus={() => setNameTouched(true)}
+                onFocus={() => {setNameTouched(true), console.log('oi')}}
                 placeholder='Digite seu nome' 
                 errorMessage={validateName(user).message} 
                 showError={nameTouched && !validateName(user).isValid}
@@ -271,7 +295,7 @@ export default function RegisterScreen() {
                 showError={passwordCheckTouched && !validatePasswordConfirmation(password, passwordCheck).isValid}
               />
               
-              <View style={styles.dropdownWrapper}>
+              <View style={styles.dropdownWrapperOne}>
                 <DropDownPicker
                   textStyle={styles.pickerInput}
                   open={openState}
@@ -299,7 +323,7 @@ export default function RegisterScreen() {
                 )}
               </View>
 
-              <View style={styles.dropdownWrapper}>
+              <View style={styles.dropdownWrapperTwo}>
                 <DropDownPicker 
                   textStyle={styles.pickerInput}
                   open={openCity}
@@ -359,10 +383,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignContent: 'flex-start',
-    marginTop: 20,
+    marginTop: 0,
     alignItems: 'center',
-    gap: 2,
-    paddingTop: 10
   },
   logoImage: {
     height: 60, 
@@ -385,7 +407,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column'
   },
   fieldsContainer: {
-    paddingTop: 10,
+    paddingTop: 0,
     gap: 0,
   },
   pickerInput: {
@@ -417,8 +439,14 @@ const styles = StyleSheet.create({
   inputContainer: {
     borderBottomWidth: 0,
   },
-  dropdownWrapper: {
-    marginTop: 7,
+  dropdownWrapperOne: {
+    marginTop: 5,
+    marginBottom: 10,
+
+  },
+  dropdownWrapperTwo: {
+    marginTop: 15,
+
   },
   errorText: {
     color: 'red',
