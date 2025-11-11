@@ -21,22 +21,18 @@ export default function ProfileScreen() {
                     <Text style={styles.username}>@rafabaladeira</Text>
                 </View>
                 <TouchableOpacity onPress={() => {}}  style={styles.editarPerfil}>
-                    <Text style={{textAlign: 'center', fontFamily: 'NunitoMedium', fontSize: 16, color: Colors.creme}}>Editar Perfil  <FontAwesome name="edit" size={20} color="white" />
-
-</Text>
+                    <Text style={{textAlign: 'center', fontFamily: 'NunitoMedium', fontSize: 16, color: Colors.creme}}>
+                        Editar Perfil  
+                        <FontAwesome name="edit" size={20} color="white" />
+                    </Text>
                 </TouchableOpacity>
-
-
             </View>
 
             <Text style={{fontFamily: 'NunitoExtraLight', fontSize: 32, textAlign: 'center', marginTop: 20}}>Meus Pets</Text>    
             
             <ScrollView style={{padding: 20}}>
-
-            <CardPet name={'Robert'} imageSrc={'../../assets/images/mockdog.png'} typePet={'Caramelo'} avaliable={true} canEdit={true} ></CardPet>
+                <CardPet name={'Robert'} imageSrc={'../../assets/images/mockdog.png'} typePet={'Caramelo'} avaliable={true} canEdit={true} ></CardPet>
             </ScrollView>
-
-
       
         </ScrollView>
     </ImageBackground>

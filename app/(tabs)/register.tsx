@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import getStates, { getCitiesFromState } from '@/controllers/states-controller';
 import DropDownPicker from 'react-native-dropdown-picker';
 import registerUser from '@/services/register';
+import MaskInput from 'react-native-mask-input';
 
 interface ValidationResult {
   isValid: boolean;
@@ -17,6 +18,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [passwordCheck, setPasswordCheck] = useState('');
   const [cpf, setCpf] = useState('');
+  const [cpfMasked, setCpfMasked] = useState('');
   const [userName, setUserName] = useState('');
   const [openState, setOpenState] = useState(false);
   const [openCity, setOpenCity] = useState(false);
@@ -72,11 +74,16 @@ export default function RegisterScreen() {
   };
 
   const validateCPF = (cpf: string): ValidationResult => {
+    const cpfClean = cpf.replace(/\D/g, '');
+    let sum;
+
+    if(!cpfTouched) {
+      return { isValid: true, message: ' ' };
+    }
+
     if (!cpf.trim()) {
       return { isValid: false, message: 'CPF é obrigatório' };
     }
-
-    const cpfClean = cpf.replace(/\D/g, '');
 
     if (cpfClean.length !== 11) {
       return { isValid: false, message: 'CPF deve ter 11 dígitos' };
@@ -86,7 +93,7 @@ export default function RegisterScreen() {
       return { isValid: false, message: 'CPF inválido' };
     }
 
-    let sum = 0;
+    sum = 0;
     for (let i = 0; i < 9; i++) {
       sum += parseInt(cpfClean.charAt(i)) * (10 - i);
     }
@@ -100,13 +107,14 @@ export default function RegisterScreen() {
     for (let i = 0; i < 10; i++) {
       sum += parseInt(cpfClean.charAt(i)) * (11 - i);
     }
+
     remainder = (sum * 10) % 11;
     if (remainder === 10) remainder = 0;
     if (remainder !== parseInt(cpfClean.charAt(10))) {
       return { isValid: false, message: 'CPF inválido' };
     }
 
-    return { isValid: true, message: '' };
+    return { isValid: true, message: ' ' };
   };
 
   const validateUsername = (username: string): ValidationResult => {
@@ -172,26 +180,6 @@ export default function RegisterScreen() {
     return { isValid: true, message: '' };
   };
 
-
-  const formatCPF = (value: string): string => {
-    const cpf = value.replace(/\D/g, '');
-
-    if (cpf.length <= 3) {
-      return cpf;
-    } else if (cpf.length <= 6) {
-      return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
-    } else if (cpf.length <= 9) {
-      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
-    } else {
-      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
-    }
-  };
-
-  const handleCPFChange = (value: string) => {
-    const formattedCPF = formatCPF(value);
-    setCpf(formattedCPF);
-  };
-
   const isFormValid = () => {
     return validateName(user).isValid && 
            validateCPF(cpf).isValid && 
@@ -243,13 +231,22 @@ export default function RegisterScreen() {
                 errorMessage={validateName(user).message} 
                 showError={nameTouched && !validateName(user).isValid}
               />
-              <RegisterInput 
-                outputFunc={handleCPFChange} 
-                onFocus={() => setCpfTouched(true)}
-                placeholder='Digite seu CPF' 
-                errorMessage={validateCPF(cpf.replace(/\D/g, '')).message} 
-                showError={cpfTouched && !validateCPF(cpf.replace(/\D/g, '')).isValid}
-              />
+              <View>
+                <MaskInput
+                  style={[styles.input, styles.maskInput]}
+                  value={cpfMasked}
+                  onChangeText={(masked) => {
+                    setCpfMasked(masked);
+                    setCpf(masked.replace(/\D/g, '')); 
+                  }}
+                  onFocus={() => setCpfTouched(true)}
+                  mask={[/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
+                  placeholder="Digite seu CPF"
+                  placeholderTextColor={Colors.amarelo}
+                  keyboardType="numeric"
+                />
+                <Text style={styles.errorText}>{validateCPF(cpf).message}</Text>
+              </View>
               <RegisterInput 
                 outputFunc={(dado) => setUserName(dado)} 
                 onFocus={() => setUserNameTouched(true)}
@@ -349,7 +346,6 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'stretch',
     justifyContent: 'flex-start',
     padding: 20,
     backgroundColor: Colors.creme
@@ -380,20 +376,17 @@ const styles = StyleSheet.create({
   },
   titleList: {
     fontFamily: 'PoppinsExtraLight',
-    paddingTop: 20,
     fontSize: 60,
     color: Colors.laranja
   },
   content: {
     flex: 1,
     display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between'
+    flexDirection: 'column'
   },
   fieldsContainer: {
     paddingTop: 10,
     gap: 0,
-    flex: 1,
   },
   pickerInput: {
     fontFamily: 'PoppinsRegular',
@@ -407,6 +400,17 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     height: 50,
   },
+  maskInput: {
+    fontFamily: 'PoppinsRegular',
+    backgroundColor: 'white',
+    borderWidth: 2,
+    borderRadius: 10,
+    borderColor: Colors.amarelo,
+    paddingLeft: 20,
+    height: 50,
+    color: Colors.amarelo,
+    fontSize: 18
+  },
   dropdownMargin: {
     marginBottom: 25
   },
@@ -418,9 +422,10 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-    fontSize: 14,
+    fontSize: 11,
     marginTop: 5,
-    marginBottom: 10,
+    marginBottom: 5,
+    marginLeft: 5,
     fontFamily: 'PoppinsRegular'
   },
   dropdownErrorText: {
@@ -432,10 +437,9 @@ const styles = StyleSheet.create({
     fontFamily: 'PoppinsRegular'
   },
   buttonContainer: {
-    paddingVertical: 30,
-    paddingHorizontal: 20,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    marginTop: 20
   },
   registerButton: {
     backgroundColor: Colors.laranja,
