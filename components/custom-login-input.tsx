@@ -1,32 +1,50 @@
 import { StyleSheet, View } from "react-native"
-import { Input, Icon } from '@rneui/themed';
+//import { Input, Icon } from '@rneui/themed';
 import Colors from "@/constants/Colors";
 import { useState } from "react";
+import { TextInput, useTheme } from "react-native-paper";
+import { MD3LightTheme } from "react-native-paper";
+
 
 export default function LoginInput({placeholder, errorMessage, isPasswd = false, outputFunc }:
     {placeholder: string, errorMessage: string, isPasswd?: boolean, outputFunc: (value: string) => void}){
         const [value, setValue] = useState('')
         const [isTouched, setTouched] = useState(false)
+        const theme = {
+        ...MD3LightTheme,
+        fonts: {
+          ...MD3LightTheme.fonts,
+          bodyLarge: { ...MD3LightTheme.fonts.bodyLarge, fontFamily: "PoppinsRegular" },
+        },
+      };
+
 
         return (
             <View>
-                <Input inputStyle={styles.input}
-                        placeholder={placeholder}
-                        selectionColor={Colors.laranja}
-                        errorStyle={{ color: 'red' }}
-                        errorMessage={value.length == 0 && isTouched ? errorMessage : ''}
-                        onBlur={() => setTouched(true)} 
-                        onChangeText={(text: string)=> {setValue(text)
-                        outputFunc(text)}}
-                        keyboardType="default"     
-                        secureTextEntry={isPasswd} 
-                        leftIcon={
-                        <Icon
-                            name= {isPasswd ? 'lock' : 'person'} 
-                            size={24}
-                            color={Colors.laranja}
+                    <TextInput
+                      style={styles.input}
+                      mode="outlined"
+                      label={placeholder}
+                      value={value}
+                      onChangeText={(text) => {
+                        setValue(text);
+                        outputFunc(text);
+                      }}
+                      onBlur={() => setTouched(true)}
+                      error={value.length === 0 && isTouched}
+                      secureTextEntry={isPasswd}
+                      keyboardType="default"
+                      left={
+                        <TextInput.Icon
+                          icon={isPasswd ? "lock" : "account"}
+                          color={Colors.laranja}
                         />
-                        }
+                      }
+                      outlineColor={Colors.laranja}
+                      activeOutlineColor={Colors.laranja}
+                      selectionColor={Colors.laranja}
+                      theme={theme} 
+
                     />
             </View>)
     
@@ -35,7 +53,7 @@ export default function LoginInput({placeholder, errorMessage, isPasswd = false,
 
 const styles = StyleSheet.create({
   input: {
-    fontFamily: 'PoppinsRegular'
+    fontFamily: 'PoppinsRegular',
   }
 
 
