@@ -32,6 +32,14 @@ export default function RootLayout() {
     PoppinsRegular: require('../assets/fonts/Poppins/Poppins-Regular.ttf'),
     PoppinsMedium: require('../assets/fonts/Poppins/Poppins-Medium.ttf'),
     PoppinsExtraLight: require('../assets/fonts/Poppins/Poppins-ExtraLight.ttf'),
+    NunitoBlack: require('../assets/fonts/Nunito/Nunito-Black.ttf'),
+    NunitoExtraLight: require('../assets/fonts/Nunito/Nunito-ExtraLight.ttf'),
+    NunitoBold: require('../assets/fonts/Nunito/Nunito-Bold.ttf'),
+
+    NunitoMedium: require('../assets/fonts/Nunito/Nunito-Medium.ttf'),
+
+
+
 
 
 

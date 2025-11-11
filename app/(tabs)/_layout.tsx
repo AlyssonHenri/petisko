@@ -18,8 +18,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-
-
+  
   return (
     <Tabs
       screenOptions={{
@@ -28,7 +27,7 @@ export default function TabLayout() {
         headerShown: false,
       }}>
       <Tabs.Screen
-        name="index"
+        name="login"
         options={{
           title: 'Tab One',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
@@ -47,7 +46,6 @@ export default function TabLayout() {
           )
         }}
       />
-     
       <Tabs.Screen
         name="two"
         options={{
