@@ -1,8 +1,13 @@
 import axios from 'axios';
-import { IUser } from '@/interfaces/user';
-export default async function registerUser(user: IUser): Promise<void> {
-    const response = await axios.post('http://127.0.0.1:8088/auth/users/',
-        user);
-    //return response.data.data;
-}
+import { UserRegister } from '@/interfaces/user';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
+export default async function registerUser(user: UserRegister): Promise<void> {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/users/`, user);
+    return response.data;
+  } catch (error) {
+    console.error('Erro no registro:', error);
+    throw error;
+  }
+}
