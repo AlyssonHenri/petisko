@@ -18,7 +18,7 @@ export default function LoginScreen() {
 
     try {
       await loginUser({ "username": user, "password": password });
-      //router.push('/profile');
+      router.push('/profile');
     } catch (err) {
       console.error('Erro no login:', err);
       setError('Falha no login. Verifique suas credenciais.');
