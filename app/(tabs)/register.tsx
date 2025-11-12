@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20
+    marginTop: 20,
   },
   registerButton: {
     backgroundColor: Colors.laranja,

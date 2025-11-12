@@ -18,10 +18,10 @@ export default function LoginScreen() {
 
     try {
       await loginUser({ "username": user, "password": password });
-      router.push('/profile');
+      //router.push('/profile');
     } catch (err) {
       console.error('Erro no login:', err);
-      setError('Falha no login. Verifique suas credenciais e conexão.');
+      setError('Falha no login. Verifique suas credenciais.');
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,7 @@ export default function LoginScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color={Colors.creme} />
+              <ActivityIndicator color={Colors.creme} size={'large'}/>
             ) : (
               <Text style={styles.loginButtonText}>Login</Text>
             )}

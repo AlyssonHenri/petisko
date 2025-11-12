@@ -42,42 +42,50 @@ export default function EditProfileScreen() {
     const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
     const [cityList, setCityList] = useState<{ label: string; value: string }[]>([]);
 
-    // Estados para valores iniciais
-    const [initialStateName, setInitialStateName] = useState('');
-    const [initialCityName, setInitialCityName] = useState('');
-
     useEffect(() => {
-        async function fetchUser() {
-            const user = await getUser();
-            if (user) {
-                setUserInfo(user);
-                setName(user.name || '');
-                setUsername(user.username || '');
-                setInitialStateName(user.state || '');
-                setInitialCityName(user.city || '');
-                setProfileImage(user.img || '');
-            }
-            setLoading(false);
-        }
-        fetchUser();
+            async function loadData() {
+                try {
+                    const user = await getUser();
+                    if (!user) {
+                        setLoading(false);
+                        return;
+                    }
 
-        getStates().then(statesApi => {
-            const formatted = statesApi.map(state => ({
-                label: state.name,
-                value: state.state_code,
-            }));
-            setStateList(formatted);
+                    setUserInfo(user);
+                    setName(user.name || '');
+                    setUsername(user.username || '');
+                    setProfileImage(user.img || '');
 
-            const initialState = formatted.find(s => s.label === initialStateName);
-            if (initialState) {
-                setState(initialState.value);
-                getCities(initialState.label).then(formattedCities => {
-                    const initialCity = formattedCities.find(c => c.value === initialCityName);
-                    if (initialCity) setCity(initialCity.value);
-                });
+                    const userStateName = user.state || '';
+                    const userCityName = user.city || '';
+
+                    const statesApi = await getStates();
+                    const formattedStates = statesApi.map(state => ({
+                        label: state.name,
+                        value: state.state_code,
+                    }));
+                    setStateList(formattedStates);
+                    const initialState = formattedStates.find(s => s.label === userStateName);
+
+                    if (initialState) {
+                        setState(initialState.value);
+                        const formattedCities = await getCities(initialState.label);
+                        const initialCity = formattedCities.find(c => c.value === userCityName);
+
+                        if (initialCity) {
+                            setCity(initialCity.value);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Falha ao carregar dados:", error);
+                    Alert.alert("Erro", "Não foi possível carregar os dados do perfil.");
+                } finally {
+                    setLoading(false);
+                }
             }
-        });
-    }, []);
+
+            loadData();
+        }, []);
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
