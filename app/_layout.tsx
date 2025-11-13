@@ -1,18 +1,17 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
 import 'react-native-reanimated';
-import { router } from 'expo-router';
 
 import { useColorScheme } from '@/components/useColorScheme';
-import { isNavbarActive } from '@/controllers/navbar-controller';
 import CustomSplashScreen from '@/components/SplashScreen';
 
 export {
-  // Catch any errors thrown by the Layout component.
+  // Catch any errors thrown by the Layout component.r
   ErrorBoundary,
 } from 'expo-router';
 
@@ -35,15 +34,7 @@ export default function RootLayout() {
     NunitoBlack: require('../assets/fonts/Nunito/Nunito-Black.ttf'),
     NunitoExtraLight: require('../assets/fonts/Nunito/Nunito-ExtraLight.ttf'),
     NunitoBold: require('../assets/fonts/Nunito/Nunito-Bold.ttf'),
-
     NunitoMedium: require('../assets/fonts/Nunito/Nunito-Medium.ttf'),
-
-
-
-
-
-
-
     ...FontAwesome.font,
   });
 
@@ -78,14 +69,16 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
     <ThemeProvider value={DefaultTheme}>
-
-      <Stack>
-        {/* <Stack.Screen name="modal" options={{ presentation: 'modal' }} /> */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-      </Stack>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
