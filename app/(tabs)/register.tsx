@@ -7,6 +7,8 @@ import getStates, { getCitiesFromState } from '@/controllers/states-controller';
 import DropDownPicker from 'react-native-dropdown-picker';
 import registerUser from '@/services/register';
 import MaskInput from 'react-native-mask-input';
+import loginUser from '@/services/login';
+import { router } from 'expo-router';
 
 interface ValidationResult {
   isValid: boolean;
@@ -14,7 +16,7 @@ interface ValidationResult {
 }
 
 export default function RegisterScreen() {
-  const [user, setUsername] = useState('')
+  const [user, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordCheck, setPasswordCheck] = useState('');
   const [cpf, setCpf] = useState('');
@@ -35,16 +37,16 @@ export default function RegisterScreen() {
   const [cityTouched, setCityTouched] = useState(false);
 
 
-  useEffect(()=> {
+  useEffect(() => {
     getStates().then(statesApi => {
-    const formatted = statesApi.map(state => ({
-      label: state.name,
-      value: state.state_code,
-    }));
-    setStateList(formatted);
+      const formatted = statesApi.map(state => ({
+        label: state.name,
+        value: state.state_code,
+      }));
+      setStateList(formatted);
     })
-      }, [])
-  
+  }, [])
+
 
   async function getCities(value: string) {
     const citiesList = await getCitiesFromState(value)
@@ -56,6 +58,10 @@ export default function RegisterScreen() {
   }
 
   const validateName = (name: string): ValidationResult => {
+    if (!nameTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!name.trim()) {
       return { isValid: false, message: 'Nome é obrigatório' };
     }
@@ -77,8 +83,8 @@ export default function RegisterScreen() {
     const cpfClean = cpf.replace(/\D/g, '');
     let sum;
 
-    if(!cpfTouched) {
-      return { isValid: true, message: ' ' };
+    if (!cpfTouched) {
+      return { isValid: true, message: '' };
     }
 
     if (!cpf.trim()) {
@@ -114,10 +120,14 @@ export default function RegisterScreen() {
       return { isValid: false, message: 'CPF inválido' };
     }
 
-    return { isValid: true, message: ' ' };
+    return { isValid: true, message: '' };
   };
 
   const validateUsername = (username: string): ValidationResult => {
+    if (!userNameTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!username.trim()) {
       return { isValid: false, message: 'Nome de usuário é obrigatório' };
     }
@@ -136,6 +146,10 @@ export default function RegisterScreen() {
   };
 
   const validatePassword = (password: string): ValidationResult => {
+    if (!passwordTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!password) {
       return { isValid: false, message: 'Senha é obrigatória' };
     }
@@ -157,6 +171,10 @@ export default function RegisterScreen() {
   };
 
   const validatePasswordConfirmation = (password: string, passwordCheck: string): ValidationResult => {
+    if (!passwordCheckTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!passwordCheck) {
       return { isValid: false, message: 'Confirmação de senha é obrigatória' };
     }
@@ -167,6 +185,10 @@ export default function RegisterScreen() {
   };
 
   const validateState = (state: string): ValidationResult => {
+    if (!validateState) {
+      return { isValid: true, message: '' };
+    }
+
     if (!state.trim()) {
       return { isValid: false, message: 'Estado é obrigatório' };
     }
@@ -174,6 +196,10 @@ export default function RegisterScreen() {
   };
 
   const validateCity = (city: string): ValidationResult => {
+    if (!cityTouched) {
+      return { isValid: true, message: '' };
+    }
+
     if (!city.trim()) {
       return { isValid: false, message: 'Cidade é obrigatória' };
     }
@@ -181,13 +207,13 @@ export default function RegisterScreen() {
   };
 
   const isFormValid = () => {
-    return validateName(user).isValid && 
-           validateCPF(cpf).isValid && 
-           validateUsername(userName).isValid && 
-           validatePassword(password).isValid &&
-           validatePasswordConfirmation(password, passwordCheck).isValid && 
-           validateState(state).isValid && 
-           validateCity(city).isValid;
+    return validateName(user).isValid &&
+      validateCPF(cpf).isValid &&
+      validateUsername(userName).isValid &&
+      validatePassword(password).isValid &&
+      validatePasswordConfirmation(password, passwordCheck).isValid &&
+      validateState(state).isValid &&
+      validateCity(city).isValid;
   };
 
   const markAllFieldsAsTouched = () => {
@@ -199,144 +225,154 @@ export default function RegisterScreen() {
     setCityTouched(true);
   };
 
-  const handleRegisterPress = () => {
+  const handleRegisterPress = async () => {
     if (!isFormValid()) {
       markAllFieldsAsTouched();
       return;
     }
-    registerUser({"name": user, "username": userName, "password": password, "cpf": cpf, "state": state, "city": city})
-    console.log('Cadastro realizado com sucesso!');
+
+    const response = registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state, "city": city })
+
+    if (response !== null){
+      try {
+        await loginUser({ "username": user, "password": password });
+        router.push('/profile');
+      } catch (err) {
+        console.error('Erro no login:', err);
+      }
+    }
+    
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         <View style={styles.header}>
-            <Text style={[styles.titleLogo, styles.title]}>
-                pet<Text style={[styles.titleLogoMini, styles.title]}>isko</Text>
-            </Text>
-            <Image style={styles.logoImage} resizeMode='contain' source={require('../../assets/logo/logo.png')} />
+          <Text style={[styles.titleLogo, styles.title]}>
+            pet<Text style={[styles.titleLogoMini, styles.title]}>isko</Text>
+          </Text>
+          <Image style={styles.logoImage} resizeMode='contain' source={require('../../assets/logo/logo.png')} />
         </View>
-        
+
         <View style={styles.content}>
-            <Text style={[styles.titleList]}>
-                cadastro
-            </Text>
+          <Text style={[styles.titleList]}>
+            cadastro
+          </Text>
 
-            <View style={styles.fieldsContainer}>
-              <RegisterInput 
-                outputFunc={(dado) => setUsername(dado)} 
-                onFocus={() => setNameTouched(true)}
-                placeholder='Digite seu nome' 
-                errorMessage={validateName(user).message} 
-                showError={nameTouched && !validateName(user).isValid}
+          <View style={styles.fieldsContainer}>
+            <RegisterInput
+              outputFunc={(dado) => setUsername(dado)}
+              onFocus={() => { setNameTouched(true), console.log('oi') }}
+              placeholder='Digite seu nome'
+              errorMessage={validateName(user).message}
+              showError={nameTouched && !validateName(user).isValid}
+            />
+            <View>
+              <MaskInput
+                style={[styles.input, styles.maskInput]}
+                value={cpfMasked}
+                onChangeText={(masked) => {
+                  setCpfMasked(masked);
+                  setCpf(masked.replace(/\D/g, ''));
+                }}
+                onFocus={() => setCpfTouched(true)}
+                mask={[/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
+                placeholder="Digite seu CPF"
+                placeholderTextColor={Colors.amarelo}
+                keyboardType="numeric"
               />
-              <View>
-                <MaskInput
-                  style={[styles.input, styles.maskInput]}
-                  value={cpfMasked}
-                  onChangeText={(masked) => {
-                    setCpfMasked(masked);
-                    setCpf(masked.replace(/\D/g, '')); 
-                  }}
-                  onFocus={() => setCpfTouched(true)}
-                  mask={[/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
-                  placeholder="Digite seu CPF"
-                  placeholderTextColor={Colors.amarelo}
-                  keyboardType="numeric"
-                />
-                <Text style={styles.errorText}>{validateCPF(cpf).message}</Text>
-              </View>
-              <RegisterInput 
-                outputFunc={(dado) => setUserName(dado)} 
-                onFocus={() => setUserNameTouched(true)}
-                placeholder='Digite o usuário' 
-                errorMessage={validateUsername(userName).message} 
-                showError={userNameTouched && !validateUsername(userName).isValid}
-              />
-              <RegisterInput 
-                outputFunc={(dado) => setPassword(dado)} 
-                onFocus={() => setPasswordTouched(true)}
-                isPasswd={true} 
-                placeholder='Digite a senha' 
-                errorMessage={validatePassword(password).message} 
-                showError={passwordTouched && !validatePassword(password).isValid}
-              />
-              <RegisterInput 
-                outputFunc={(dado) => setPasswordCheck(dado)} 
-                onFocus={() => setPasswordCheckTouched(true)}
-                isPasswd={true} 
-                placeholder='Repita sua senha' 
-                errorMessage={validatePasswordConfirmation(password, passwordCheck).message} 
-                showError={passwordCheckTouched && !validatePasswordConfirmation(password, passwordCheck).isValid}
-              />
-              
-              <View style={styles.dropdownWrapper}>
-                <DropDownPicker
-                  textStyle={styles.pickerInput}
-                  open={openState}
-                  value={state}
-                  items={stateList}
-                  setOpen={setOpenState}
-                  setValue={setState}
-                  setItems={setStateList}
-                  style={[styles.input]}
-                  listMode="MODAL"
-                  onOpen={() => setStateTouched(true)} 
-                  placeholder={'Selecione seu estado'}
-                  onChangeValue={(value) => {
-                    if (value) {
-                      const selectedState = stateList.find(item => item.value === value);
-                      const stateName = selectedState!.label;
-                      setCity('');
-                      setOpenState(false)
-                      getCities(stateName);
-                    }
-                  }}
-                />
-                {stateTouched && !validateState(state).isValid && (
-                  <Text style={styles.dropdownErrorText}>{validateState(state).message}</Text>
-                )}
-              </View>
+              <Text style={styles.errorText}>{validateCPF(cpf).message}</Text>
+            </View>
+            <RegisterInput
+              outputFunc={(dado) => setUserName(dado)}
+              onFocus={() => setUserNameTouched(true)}
+              placeholder='Digite o usuário'
+              errorMessage={validateUsername(userName).message}
+              showError={userNameTouched && !validateUsername(userName).isValid}
+            />
+            <RegisterInput
+              outputFunc={(dado) => setPassword(dado)}
+              onFocus={() => setPasswordTouched(true)}
+              isPasswd={true}
+              placeholder='Digite a senha'
+              errorMessage={validatePassword(password).message}
+              showError={passwordTouched && !validatePassword(password).isValid}
+            />
+            <RegisterInput
+              outputFunc={(dado) => setPasswordCheck(dado)}
+              onFocus={() => setPasswordCheckTouched(true)}
+              isPasswd={true}
+              placeholder='Repita sua senha'
+              errorMessage={validatePasswordConfirmation(password, passwordCheck).message}
+              showError={passwordCheckTouched && !validatePasswordConfirmation(password, passwordCheck).isValid}
+            />
 
-              <View style={styles.dropdownWrapper}>
-                <DropDownPicker 
-                  textStyle={styles.pickerInput}
-                  open={openCity}
-                  value={city}
-                  items={cityList}
-                  setOpen={setOpenCity}
-                  setValue={setCity}
-                  setItems={setCityList}
-                  listMode="MODAL"
-                  disabled={!state} 
-                  onOpen={() => setCityTouched(true)} 
-                  style={[styles.input]}
-                  placeholder={'Selecione sua cidade'}
-                />
-                {cityTouched && !validateCity(city).isValid && state && (
-                  <Text style={styles.dropdownErrorText}>{validateCity(city).message}</Text>
-                )}
-              </View>                
+            <View style={styles.dropdownWrapperOne}>
+              <DropDownPicker
+                textStyle={styles.pickerInput}
+                open={openState}
+                value={state}
+                items={stateList}
+                setOpen={setOpenState}
+                setValue={setState}
+                setItems={setStateList}
+                style={[styles.input]}
+                listMode="MODAL"
+                onOpen={() => setStateTouched(true)}
+                placeholder={'Selecione seu estado'}
+                onChangeValue={(value) => {
+                  if (value) {
+                    const selectedState = stateList.find(item => item.value === value);
+                    const stateName = selectedState!.label;
+                    setCity('');
+                    setOpenState(false)
+                    getCities(stateName);
+                  }
+                }}
+              />
+              {stateTouched && !validateState(state).isValid && (
+                <Text style={styles.dropdownErrorText}>{validateState(state).message}</Text>
+              )}
             </View>
 
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity 
-                style={[
-                  styles.registerButton, 
-                  !isFormValid() && styles.registerButtonDisabled
-                ]}
-                onPress={handleRegisterPress}
-                disabled={false}
-              >
-                <Text style={[
-                  styles.registerButtonText,
-                  !isFormValid() && styles.registerButtonTextDisabled
-                ]}>
-                  Cadastrar
-                </Text>
-              </TouchableOpacity>
+            <View style={styles.dropdownWrapperTwo}>
+              <DropDownPicker
+                textStyle={styles.pickerInput}
+                open={openCity}
+                value={city}
+                items={cityList}
+                setOpen={setOpenCity}
+                setValue={setCity}
+                setItems={setCityList}
+                listMode="MODAL"
+                disabled={!state}
+                onOpen={() => setCityTouched(true)}
+                style={[styles.input]}
+                placeholder={'Selecione sua cidade'}
+              />
+              {cityTouched && !validateCity(city).isValid && state && (
+                <Text style={styles.dropdownErrorText}>{validateCity(city).message}</Text>
+              )}
             </View>
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.registerButton,
+                !isFormValid() && styles.registerButtonDisabled
+              ]}
+              onPress={handleRegisterPress}
+              disabled={false}
+            >
+              <Text style={[
+                styles.registerButtonText,
+                !isFormValid() && styles.registerButtonTextDisabled
+              ]}>
+                Cadastrar
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -350,23 +386,14 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: Colors.creme
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 36,
     color: Colors.laranja
-  },
-  header: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignContent: 'flex-start',
-    marginTop: 20,
-    alignItems: 'center',
-    gap: 2,
-    paddingTop: 10
-  },
-  logoImage: {
-    height: 60, 
-    width: 50
   },
   titleLogo: {
     fontFamily: 'PoppinsBold'
@@ -374,24 +401,22 @@ const styles = StyleSheet.create({
   titleLogoMini: {
     fontFamily: 'PoppinsSemiBold'
   },
-  titleList: {
-    fontFamily: 'PoppinsExtraLight',
-    fontSize: 60,
-    color: Colors.laranja
+  logoImage: {
+    height: 60,
+    width: 50
   },
   content: {
     flex: 1,
-    display: 'flex',
-    flexDirection: 'column'
+  },
+  titleList: {
+    fontFamily: 'PoppinsExtraLight',
+    fontSize: 60,
+    color: Colors.laranja,
+    textAlign: 'center',
+    marginBottom: 10,
   },
   fieldsContainer: {
-    paddingTop: 10,
-    gap: 0,
-  },
-  pickerInput: {
-    fontFamily: 'PoppinsRegular',
-    fontSize: 17,
-    color: Colors.amarelo
+    gap: 5,
   },
   input: {
     borderWidth: 2,
@@ -399,26 +424,27 @@ const styles = StyleSheet.create({
     borderColor: Colors.amarelo,
     paddingLeft: 20,
     height: 50,
+    backgroundColor: 'white',
   },
   maskInput: {
     fontFamily: 'PoppinsRegular',
-    backgroundColor: 'white',
-    borderWidth: 2,
-    borderRadius: 10,
-    borderColor: Colors.amarelo,
-    paddingLeft: 20,
-    height: 50,
     color: Colors.amarelo,
     fontSize: 18
   },
-  dropdownMargin: {
-    marginBottom: 25
+  pickerInput: {
+    fontFamily: 'PoppinsRegular',
+    fontSize: 17,
+    color: Colors.amarelo
   },
-  inputContainer: {
-    borderBottomWidth: 0,
+  dropdownWrapperOne: {
+    marginTop: 5,
+    marginBottom: 10,
+    zIndex: 2000,
   },
-  dropdownWrapper: {
-    marginBottom: 20,
+  dropdownWrapperTwo: {
+    marginTop: 15,
+    marginBottom: 10,
+    zIndex: 1000,
   },
   errorText: {
     color: 'red',
@@ -432,14 +458,13 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 11,
     marginTop: 5,
-    marginBottom: -10,
     marginLeft: 7,
     fontFamily: 'PoppinsRegular'
   },
   buttonContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20
+    marginTop: 20,
   },
   registerButton: {
     backgroundColor: Colors.laranja,
@@ -472,3 +497,11 @@ const styles = StyleSheet.create({
     color: '#888888'
   }
 });
+function setError(arg0: string) {
+  throw new Error('Function not implemented.');
+}
+
+function setLoading(arg0: boolean) {
+  throw new Error('Function not implemented.');
+}
+
