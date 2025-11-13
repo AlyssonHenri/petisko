@@ -39,9 +39,7 @@ export default function ProfileScreen() {
                         </View>
                         <TouchableOpacity onPress={() => router.push('/edit-profile')} style={styles.editarPerfil}>
                             <Text style={styles.buttonText}>
-                                Editar Perfil
-                                <FontAwesome name="edit" size={20} color="white" />
-                            </Text>
+                                Editar Perfil <FontAwesome name="edit" size={20} color="white" /></Text>
                         </TouchableOpacity>
                     </View>
 
