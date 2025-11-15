@@ -1,4 +1,4 @@
-import { Image, Keyboard, StyleSheet, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import { Image, Keyboard, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView, Platform, Alert } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import RegisterInput from '@/components/custom-register-input';
@@ -9,6 +9,7 @@ import registerUser from '@/services/register';
 import MaskInput from 'react-native-mask-input';
 import loginUser from '@/services/login';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface ValidationResult {
   isValid: boolean;
@@ -46,6 +47,27 @@ export default function RegisterScreen() {
       setStateList(formatted);
     })
   }, [])
+
+  useFocusEffect(() => {
+    setUsername('');
+    setPassword('');
+    setPasswordCheck('');
+    setCpf('');
+    setCpfMasked('');
+    setUserName('');
+    setOpenState(false);
+    setOpenCity(false);
+    setState('');
+    setCity('');
+    setCityList([]);
+    setNameTouched(false);
+    setCpfTouched(false);
+    setUserNameTouched(false);
+    setPasswordTouched(false);
+    setPasswordCheckTouched(false);
+    setStateTouched(false);
+    setCityTouched(false);
+  });
 
 
   async function getCities(value: string) {
@@ -185,7 +207,7 @@ export default function RegisterScreen() {
   };
 
   const validateState = (state: string): ValidationResult => {
-    if (!validateState) {
+    if (!stateTouched) {
       return { isValid: true, message: '' };
     }
 
@@ -231,17 +253,14 @@ export default function RegisterScreen() {
       return;
     }
 
-    const response = registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state, "city": city })
-
-    if (response !== null){
-      try {
-        await loginUser({ "username": user, "password": password });
-        router.push('/profile');
-      } catch (err) {
-        console.error('Erro no login:', err);
-      }
+    try {
+      await registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state, "city": city });
+      await loginUser({ "username": userName, "password": password });
+      router.push('/profile');
+    } catch (err) {
+      console.error('Erro no registro ou login:', err);
+      Alert.alert('Erro', 'Falha no registro ou login. Tente novamente.');
     }
-    
   };
 
   return (
@@ -254,126 +273,128 @@ export default function RegisterScreen() {
           <Image style={styles.logoImage} resizeMode='contain' source={require('../../assets/logo/logo.png')} />
         </View>
 
-        <View style={styles.content}>
-          <Text style={[styles.titleList]}>
-            cadastro
-          </Text>
+        <KeyboardAvoidingView style={styles.content} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            <Text style={[styles.titleList]}>
+              cadastro
+            </Text>
 
-          <View style={styles.fieldsContainer}>
-            <RegisterInput
-              outputFunc={(dado) => setUsername(dado)}
-              onFocus={() => { setNameTouched(true), console.log('oi') }}
-              placeholder='Digite seu nome'
-              errorMessage={validateName(user).message}
-              showError={nameTouched && !validateName(user).isValid}
-            />
-            <View>
-              <MaskInput
-                style={[styles.input, styles.maskInput]}
-                value={cpfMasked}
-                onChangeText={(masked) => {
-                  setCpfMasked(masked);
-                  setCpf(masked.replace(/\D/g, ''));
-                }}
-                onFocus={() => setCpfTouched(true)}
-                mask={[/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
-                placeholder="Digite seu CPF"
-                placeholderTextColor={Colors.amarelo}
-                keyboardType="numeric"
+            <View style={styles.fieldsContainer}>
+              <RegisterInput
+                outputFunc={(dado) => setUsername(dado)}
+                onFocus={() => { setNameTouched(true), console.log('oi') }}
+                placeholder='Digite seu nome'
+                errorMessage={validateName(user).message}
+                showError={nameTouched && !validateName(user).isValid}
               />
-              <Text style={styles.errorText}>{validateCPF(cpf).message}</Text>
-            </View>
-            <RegisterInput
-              outputFunc={(dado) => setUserName(dado)}
-              onFocus={() => setUserNameTouched(true)}
-              placeholder='Digite o usuário'
-              errorMessage={validateUsername(userName).message}
-              showError={userNameTouched && !validateUsername(userName).isValid}
-            />
-            <RegisterInput
-              outputFunc={(dado) => setPassword(dado)}
-              onFocus={() => setPasswordTouched(true)}
-              isPasswd={true}
-              placeholder='Digite a senha'
-              errorMessage={validatePassword(password).message}
-              showError={passwordTouched && !validatePassword(password).isValid}
-            />
-            <RegisterInput
-              outputFunc={(dado) => setPasswordCheck(dado)}
-              onFocus={() => setPasswordCheckTouched(true)}
-              isPasswd={true}
-              placeholder='Repita sua senha'
-              errorMessage={validatePasswordConfirmation(password, passwordCheck).message}
-              showError={passwordCheckTouched && !validatePasswordConfirmation(password, passwordCheck).isValid}
-            />
-
-            <View style={styles.dropdownWrapperOne}>
-              <DropDownPicker
-                textStyle={styles.pickerInput}
-                open={openState}
-                value={state}
-                items={stateList}
-                setOpen={setOpenState}
-                setValue={setState}
-                setItems={setStateList}
-                style={[styles.input]}
-                listMode="MODAL"
-                onOpen={() => setStateTouched(true)}
-                placeholder={'Selecione seu estado'}
-                onChangeValue={(value) => {
-                  if (value) {
-                    const selectedState = stateList.find(item => item.value === value);
-                    const stateName = selectedState!.label;
-                    setCity('');
-                    setOpenState(false)
-                    getCities(stateName);
-                  }
-                }}
+              <View>
+                <MaskInput
+                  style={[styles.input, styles.maskInput]}
+                  value={cpfMasked}
+                  onChangeText={(masked) => {
+                    setCpfMasked(masked);
+                    setCpf(masked.replace(/\D/g, ''));
+                  }}
+                  onFocus={() => setCpfTouched(true)}
+                  mask={[/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
+                  placeholder="Digite seu CPF"
+                  placeholderTextColor={Colors.amarelo}
+                  keyboardType="numeric"
+                />
+                <Text style={styles.errorText}>{validateCPF(cpf).message}</Text>
+              </View>
+              <RegisterInput
+                outputFunc={(dado) => setUserName(dado)}
+                onFocus={() => setUserNameTouched(true)}
+                placeholder='Digite o usuário'
+                errorMessage={validateUsername(userName).message}
+                showError={userNameTouched && !validateUsername(userName).isValid}
               />
-              {stateTouched && !validateState(state).isValid && (
-                <Text style={styles.dropdownErrorText}>{validateState(state).message}</Text>
-              )}
-            </View>
-
-            <View style={styles.dropdownWrapperTwo}>
-              <DropDownPicker
-                textStyle={styles.pickerInput}
-                open={openCity}
-                value={city}
-                items={cityList}
-                setOpen={setOpenCity}
-                setValue={setCity}
-                setItems={setCityList}
-                listMode="MODAL"
-                disabled={!state}
-                onOpen={() => setCityTouched(true)}
-                style={[styles.input]}
-                placeholder={'Selecione sua cidade'}
+              <RegisterInput
+                outputFunc={(dado) => setPassword(dado)}
+                onFocus={() => setPasswordTouched(true)}
+                isPasswd={true}
+                placeholder='Digite a senha'
+                errorMessage={validatePassword(password).message}
+                showError={passwordTouched && !validatePassword(password).isValid}
               />
-              {cityTouched && !validateCity(city).isValid && state && (
-                <Text style={styles.dropdownErrorText}>{validateCity(city).message}</Text>
-              )}
-            </View>
-          </View>
+              <RegisterInput
+                outputFunc={(dado) => setPasswordCheck(dado)}
+                onFocus={() => setPasswordCheckTouched(true)}
+                isPasswd={true}
+                placeholder='Repita sua senha'
+                errorMessage={validatePasswordConfirmation(password, passwordCheck).message}
+                showError={passwordCheckTouched && !validatePasswordConfirmation(password, passwordCheck).isValid}
+              />
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[
-                styles.registerButton,
-                !isFormValid() && styles.registerButtonDisabled
-              ]}
-              onPress={handleRegisterPress}
-              disabled={false}
-            >
-              <Text style={[
-                styles.registerButtonText,
-                !isFormValid() && styles.registerButtonTextDisabled
-              ]}>
-                Cadastrar
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+              <View style={styles.dropdownWrapperOne}>
+                <DropDownPicker
+                  textStyle={styles.pickerInput}
+                  open={openState}
+                  value={state}
+                  items={stateList}
+                  setOpen={setOpenState}
+                  setValue={setState}
+                  setItems={setStateList}
+                  style={[styles.input]}
+                  listMode="MODAL"
+                  onOpen={() => setStateTouched(true)}
+                  placeholder={'Selecione seu estado'}
+                  onChangeValue={(value) => {
+                    if (value) {
+                      const selectedState = stateList.find(item => item.value === value);
+                      const stateName = selectedState!.label;
+                      setCity('');
+                      setOpenState(false)
+                      getCities(stateName);
+                    }
+                  }}
+                />
+                {stateTouched && !validateState(state).isValid && (
+                  <Text style={styles.dropdownErrorText}>{validateState(state).message}</Text>
+                )}
+              </View>
+
+              <View style={styles.dropdownWrapperTwo}>
+                <DropDownPicker
+                  textStyle={styles.pickerInput}
+                  open={openCity}
+                  value={city}
+                  items={cityList}
+                  setOpen={setOpenCity}
+                  setValue={setCity}
+                  setItems={setCityList}
+                  listMode="MODAL"
+                  disabled={!state}
+                  onOpen={() => setCityTouched(true)}
+                  style={[styles.input]}
+                  placeholder={'Selecione sua cidade'}
+                />
+                {cityTouched && !validateCity(city).isValid && state && (
+                  <Text style={styles.dropdownErrorText}>{validateCity(city).message}</Text>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.registerButton,
+                  !isFormValid() && styles.registerButtonDisabled
+                ]}
+                onPress={handleRegisterPress}
+                disabled={false}
+              >
+                <Text style={[
+                  styles.registerButtonText,
+                  !isFormValid() && styles.registerButtonTextDisabled
+                ]}>
+                  Cadastrar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -407,6 +428,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
   titleList: {
     fontFamily: 'PoppinsExtraLight',
