@@ -16,6 +16,7 @@ interface ValidationResult {
 }
 
 export default function RegisterScreen() {
+  const [actualError, setActualError] = useState('');
   const [user, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordCheck, setPasswordCheck] = useState('');
@@ -231,15 +232,19 @@ export default function RegisterScreen() {
       return;
     }
 
-    const response = registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state, "city": city })
+    const response = await registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state, "city": city })
 
-    if (response !== null){
+    if (response.success){
       try {
-        await loginUser({ "username": user, "password": password });
-        router.push('/profile');
+        router.push('/');
       } catch (err) {
-        console.error('Erro no login:', err);
+        console.log('Erro em redirecionar a página:', err);
       }
+    }
+    else {
+      const firstKey = Object.keys(response.data)[0];
+      const firstMessage = response.data[firstKey][0];
+      setActualError(firstMessage)
     }
     
   };
@@ -259,10 +264,15 @@ export default function RegisterScreen() {
             cadastro
           </Text>
 
+          {actualError && <Text style={{color: 'red', textAlign: 'center'}}>
+            {actualError}
+          </Text>}
+          
+
           <View style={styles.fieldsContainer}>
             <RegisterInput
               outputFunc={(dado) => setUsername(dado)}
-              onFocus={() => { setNameTouched(true), console.log('oi') }}
+              onFocus={() => { setNameTouched(true)}}
               placeholder='Digite seu nome'
               errorMessage={validateName(user).message}
               showError={nameTouched && !validateName(user).isValid}
