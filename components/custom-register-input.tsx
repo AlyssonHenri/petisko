@@ -16,6 +16,8 @@ export default function LoginInput({ placeholder, errorMessage, isPasswd = false
 }){
   const [value, setValue] = useState('')
   const [isTouched, setTouched] = useState(false)
+  const [secureTextEntry, setSecureTextEntry] = useState(true);
+
   
   const theme = {
     ...MD3LightTheme,
@@ -65,7 +67,19 @@ export default function LoginInput({ placeholder, errorMessage, isPasswd = false
               onFocus={handleFocus}
               onBlur={handleBlur}
               error={value.length === 0 && isTouched}
-              secureTextEntry={isPasswd}
+              secureTextEntry={secureTextEntry}
+              autoCorrect={false}
+              keyboardType="default"
+              right={
+              isPasswd ? 
+              (<TextInput.Icon
+              icon={secureTextEntry ? "eye-off" : "eye"}
+              onPress={() => {
+                setSecureTextEntry(!secureTextEntry);
+                }}
+              />) : null
+                  
+              }
               keyboardType="default"
               theme={theme} 
           />
