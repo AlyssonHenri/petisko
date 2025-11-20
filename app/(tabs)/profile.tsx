@@ -3,7 +3,7 @@ import { View } from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import { RootUser } from "@/interfaces/user";
 import getUser from "@/services/getUserInfo";
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { router } from "expo-router";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
@@ -13,14 +13,13 @@ export default function ProfileScreen() {
     const image = require('../../assets/images/background.png');
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
 
-    useFocusEffect(React.useCallback(() => {
+    useFocusEffect(() => {
         async function fetchUser() {
             const user = await getUser();
             setUserInfo(user);
         }
         fetchUser();
-    }, [])
-    );
+    });
 
     if (userInfo && userInfo.name) {
         return (

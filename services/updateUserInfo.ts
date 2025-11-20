@@ -28,17 +28,17 @@ export default async function updateUser(userData: Partial<RootUser>, imageUri?:
         const response = await axios.patch(`${API_BASE_URL}/users/update_me/`, data, {
             headers
         });
-        return {
-            success: true,
-            message: 'Perfil atualizado com sucesso!'
+        return { 
+            success: true, 
+            message: 'Perfil atualizado com sucesso!' 
         };
     } catch (error: any) {
         console.error('Erro ao atualizar usuário:', error);
         console.error('Response data:', error.response?.data);
         const message = error.response?.data?.detail || error.response?.data?.message || 'Não foi possível atualizar o perfil. Tente novamente.';
-        return {
-            success: false,
-            message
+        return { 
+            success: false, 
+            message 
         };
     }
 }
@@ -59,16 +59,16 @@ export async function updateUserImage(imageUri: string): Promise<{ success: bool
                 'Content-Type': 'multipart/form-data'
             }
         });
-        return {
-            success: true,
-            message: 'Imagem atualizada com sucesso!'
+        return { 
+            success: true, 
+            message: 'Imagem atualizada com sucesso!' 
         };
     } catch (error: any) {
         console.error('Erro ao atualizar imagem:', error);
         const message = error.response?.data?.img?.[0] || error.response?.data?.detail || 'Erro ao atualizar imagem.';
-        return {
-            success: false,
-            message
+        return { 
+            success: false, 
+            message 
         };
     }
 }
