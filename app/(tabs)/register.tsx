@@ -5,13 +5,12 @@ import { SetStateAction, useEffect, useState, useMemo, useCallback } from 'react
 import getStates, { getCitiesFromState } from '@/controllers/states-controller';
 import DropDownPicker from 'react-native-dropdown-picker';
 import registerUser from '@/services/register';
-import MaskInput from 'react-native-mask-input';
 import loginUser from '@/services/login';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import CustomInput from '@/components/generic_input'; 
 import MaskedInput from '@/components/masked_input';
-import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 interface ValidationResult {
  isValid: boolean;
@@ -38,6 +37,7 @@ export default function RegisterScreen() {
   const [passwordCheckTouched, setPasswordCheckTouched] = useState(false);
   const [stateTouched, setStateTouched] = useState(false);
   const [cityTouched, setCityTouched] = useState(false);
+  const [parte, setParte] = useState(1)
 
   useEffect(() => {
     getStates().then(statesApi => {
@@ -46,6 +46,7 @@ export default function RegisterScreen() {
         value: state.state_code,
       }));
         setStateList(formatted);
+        setParte(2)
     })
   }, [])
 
@@ -244,6 +245,10 @@ export default function RegisterScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => {if(parte === 1) {router.push('/')} else setParte(1)}} style={styles.backButton}>
+                <FontAwesome name="arrow-left" size={24} color={Colors.preto} />
+            </TouchableOpacity>
+
             <Text style={[styles.titleLogo, styles.title]}>
               pet
             </Text>
@@ -256,122 +261,153 @@ export default function RegisterScreen() {
         
         <KeyboardAvoidingView style={styles.content} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={styles.scrollContent}>
-            <Text style={[styles.titleList]}>
-              cadastro
-            </Text>
 
             <View style={styles.fieldsContainer}>
 
-              <CustomInput
-                onChangeText={(dado: SetStateAction<string>) => setUsername(dado)}
-                onFocus={() => setNameTouched(true)}
-                placeholder='Digite seu nome'
-                errorMessage={!nameError.isValid ? nameError.message : ''}
-                iconName='account'
-                value={user}
-              />
+              <TouchableOpacity onPress={() => {}} style={styles.profilePicContainer}>
+                  <Image
+                      style={styles.profilePic}
+                      source={{uri: "https://img.freepik.com/vetores-premium/icone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg?semt=ais_hybrid&w=740&q=80"}}
+                  />
+                  <View style={styles.cameraIconContainer}>
+                      <FontAwesome name="camera" size={20} color={Colors.creme} />
+                  </View>
+              </TouchableOpacity>
 
-              <MaskedInput
-                mask={[/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
-                value={cpfMasked}
-                onChangeText={(masked, unmasked) => {
-                  setCpfMasked(masked);
-                  setCpf(unmasked);
-                }}
-                onFocus={() => setCpfTouched(true)}
-                placeholder="Digite seu CPF"
-                errorMessage={!cpfError.isValid ? cpfError.message : ''}
-                iconName='card-account-details-outline'
-                keyboardType="numeric"
-              />
+              {parte === 1 ? (
+                <>
+                  <CustomInput
+                    onChangeText={(dado: SetStateAction<string>) => setUsername(dado)}
+                    onFocus={() => setNameTouched(true)}
+                    placeholder='Digite seu nome'
+                    errorMessage={!nameError.isValid ? nameError.message : ''}
+                    iconName='account'
+                    value={user}
+                  />
 
-              <CustomInput
-                onChangeText={(dado: SetStateAction<string>) => setUserName(dado)}
-                onFocus={() => setUserNameTouched(true)}
-                placeholder='Digite o usuário'
-                errorMessage={!usernameError.isValid ? usernameError.message : ''}
-                iconName='at'
-                value={userName}
-              />
+                  <MaskedInput
+                    mask={[/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
+                    value={cpfMasked}
+                    onChangeText={(masked, unmasked) => {
+                      setCpfMasked(masked);
+                      setCpf(unmasked);
+                    }}
+                    onFocus={() => setCpfTouched(true)}
+                    placeholder="Digite seu CPF"
+                    errorMessage={!cpfError.isValid ? cpfError.message : ''}
+                    iconName='card-account-details-outline'
+                    keyboardType="numeric"
+                  />
 
-              <CustomInput
-                onChangeText={(dado: SetStateAction<string>) => setPassword(dado)}
-                onFocus={() => setPasswordTouched(true)}
-                isPassword={true}
-                placeholder='Digite a senha'
-                errorMessage={!passwordError.isValid ? passwordError.message : ''}
-                iconName='lock'
-                value={password}
-              />
+                  <CustomInput
+                    onChangeText={(dado: SetStateAction<string>) => setUserName(dado)}
+                    onFocus={() => setUserNameTouched(true)}
+                    placeholder='Digite o usuário'
+                    errorMessage={!usernameError.isValid ? usernameError.message : ''}
+                    iconName='at'
+                    value={userName}
+                  />
 
-              <CustomInput
-                onChangeText={(dado: SetStateAction<string>) => setPasswordCheck(dado)}
-                onFocus={() => setPasswordCheckTouched(true)}
-                isPassword={true} 
-                placeholder='Repita sua senha'
-                errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
-                iconName='lock-check'
-                value={passwordCheck}
-              />
+                  <CustomInput
+                    onChangeText={(dado: SetStateAction<string>) => setPassword(dado)}
+                    onFocus={() => setPasswordTouched(true)}
+                    isPassword={true}
+                    placeholder='Digite a senha'
+                    errorMessage={!passwordError.isValid ? passwordError.message : ''}
+                    iconName='lock'
+                    value={password}
+                  />
 
-              <View style={styles.dropdownWrapperOne}>
-              <DropDownPicker
-                  textStyle={styles.pickerInput}
-                  open={openState}
-                  value={state}
-                  items={stateList}
-                  setOpen={setOpenState}
-                  setValue={setState}
-                  style={[styles.input]}
-                  listMode="MODAL"
-                  modalContentContainerStyle={{ backgroundColor: Colors.creme }}
-                  dropDownContainerStyle={{ backgroundColor: Colors.creme }}
-                  onOpen={() => setStateTouched(true)}
-                  placeholder={'Selecione seu estado'}
-                />
-                { !stateError.isValid && (
-                  <Text style={styles.dropdownErrorText}>{stateError.message}</Text>
-                )}
-              </View>
+                  <CustomInput
+                    onChangeText={(dado: SetStateAction<string>) => setPasswordCheck(dado)}
+                    onFocus={() => setPasswordCheckTouched(true)}
+                    isPassword={true} 
+                    placeholder='Repita sua senha'
+                    errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
+                    iconName='lock-check'
+                    value={passwordCheck}
+                  />
+                </>
+              ):(
+                <>
+                  <View style={[styles.dropdownWrapper, !stateError.isValid && styles.dropdownErrorBorder]}>
+                    <DropDownPicker
+                        textStyle={styles.pickerInput}
+                        placeholderStyle={styles.placeholderStyle}
+                        open={openState}
+                        value={state}
+                        items={stateList}
+                        setOpen={setOpenState}
+                        setValue={setState}
+                        style={[styles.input]}
+                        listMode="MODAL"
+                        modalContentContainerStyle={{ backgroundColor: Colors.creme }}
+                        dropDownContainerStyle={{ backgroundColor: Colors.creme }}
+                        onOpen={() => setStateTouched(true)}
+                        placeholder={'Selecione seu estado'}
+                      />
+                  </View>
+                      { !stateError.isValid && (
+                        <Text style={styles.dropdownErrorText}>{stateError.message}</Text>
+                      )}
 
-              <View style={styles.dropdownWrapperTwo}>
-                <DropDownPicker
-                  textStyle={styles.pickerInput}
-                  open={openCity}
-                  value={city}
-                  items={cityList}
-                  setOpen={setOpenCity}
-                  setValue={setCity}
-                  listMode="MODAL"
-                  modalContentContainerStyle={{ backgroundColor: Colors.creme }}
-                  dropDownContainerStyle={{ backgroundColor: Colors.creme }}
-                  disabled={!state}
-                  onOpen={() => setCityTouched(true)}
-                  style={[styles.input]}
-                  placeholder={'Selecione sua cidade'}
-                />
-                { !cityError.isValid && state && (
-                  <Text style={styles.dropdownErrorText}>{cityError.message}</Text>
-                )}
-              </View>
+                  <View style={[styles.dropdownWrapper, !cityError.isValid && styles.dropdownErrorBorder]}>
+                    <DropDownPicker
+                      textStyle={styles.pickerInput}
+                      placeholderStyle={styles.placeholderStyle}
+                      open={openCity}
+                      value={city}
+                      items={cityList}
+                      setOpen={setOpenCity}
+                      setValue={setCity}
+                      listMode="MODAL"
+                      modalContentContainerStyle={{ backgroundColor: Colors.creme }}
+                      dropDownContainerStyle={{ backgroundColor: Colors.creme }}
+                      disabled={!state}
+                      onOpen={() => setCityTouched(true)}
+                      style={[styles.input]}
+                      placeholder={'Selecione sua cidade'}
+                    />
+                  </View>
+                    { !cityError.isValid && state && (
+                      <Text style={styles.dropdownErrorText}>{cityError.message}</Text>
+                    )}               
+                </>
+              )}
             </View>
 
             <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.registerButton,
-                  !isFormValid && styles.registerButtonDisabled
-                ]}
-                onPress={handleRegisterPress}
-                disabled={false}
-              >
-                <Text style={[
-                  styles.registerButtonText,
-                  !isFormValid && styles.registerButtonTextDisabled
-                ]}>
-                  Cadastrar
-                </Text>
-              </TouchableOpacity>
+              {parte === 1 ? (
+                <TouchableOpacity
+                  style={[
+                    styles.registerButton
+                  ]}
+                  onPress={() => setParte(2)}
+                  disabled={false}
+                >
+                  <Text style={[
+                    styles.registerButtonText
+                  ]}>
+                    Continuar
+                  </Text>
+                </TouchableOpacity>
+              ):(
+                <TouchableOpacity
+                  style={[
+                    styles.registerButton,
+                    !isFormValid && styles.registerButtonDisabled
+                  ]}
+                  onPress={handleRegisterPress}
+                  disabled={false}
+                >
+                  <Text style={[
+                    styles.registerButtonText,
+                    !isFormValid && styles.registerButtonTextDisabled
+                  ]}>
+                    Cadastrar
+                  </Text>
+                </TouchableOpacity>
+              ) }
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -410,6 +446,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    marginTop: 20
   },
   scrollContent: {
     flexGrow: 1,
@@ -426,36 +463,52 @@ const styles = StyleSheet.create({
     gap: 5,
     backgroundColor: Colors.creme
   },
-    input: {
-    borderWidth: 2,
-    borderRadius: 10,
-    borderColor: Colors.amarelo,
-    paddingLeft: 20,
-    height: 50,
-      backgroundColor: 'transparent',
-    paddingRight: 10
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    paddingVertical: 10,
+    borderWidth: 0,
   },
   pickerInput: {
     fontFamily: 'PoppinsRegular',
     fontSize: 17,
-    color: Colors.amarelo
+    color: '#333',
   },
-  dropdownWrapperOne: {
+  placeholderStyle: {
+    color: '#A9A9A9',
+  },
+  dropdownWrapper: {
     marginTop: 5,
-    marginBottom: 10,
-    zIndex: 2000,
+    backgroundColor: 'white',
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 15,
+    minHeight: 50,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
-  dropdownWrapperTwo: {
-    marginTop: 15,
-    marginBottom: 10,
-    zIndex: 1000,
+  dropdownErrorBorder: {
+    borderColor: '#FF0000',
   },
   dropdownErrorText: {
     color: 'red',
     fontSize: 11,
     marginTop: 5,
     marginLeft: 7,
-    fontFamily: 'PoppinsRegular'
+    marginBottom: 10,
+    fontFamily: 'PoppinsRegular',
+    backgroundColor: Colors.creme
   },
   buttonContainer: {
     alignItems: 'center',
@@ -492,5 +545,37 @@ const styles = StyleSheet.create({
   },
   registerButtonTextDisabled: {
     color: '#888888'
-  }
+  },
+  backButton: {
+    zIndex: 10,
+    padding: 15,
+    paddingTop: 20,
+    marginLeft: -10,
+    backgroundColor: Colors.creme
+  },
+  profilePicContainer: {
+      alignItems: 'center',
+      marginBottom: 20,
+  },
+  profilePic: {
+      position: 'relative', 
+      width: 150,
+      height: 150,
+      borderRadius: 75,
+      borderWidth: 3,
+      borderColor: Colors.laranjaVariado,
+  },
+  cameraIconContainer: {
+      position: 'absolute',
+      bottom: 0,
+      right: '30%',
+      backgroundColor: Colors.laranjaVariado,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: Colors.creme,
+  },
 })

@@ -20,7 +20,6 @@ import {
     Alert,
     ActivityIndicator
 } from "react-native";
-import { useFocusEffect } from '@react-navigation/native';
 
 export default function EditProfileScreen() {
     const image = require('../../assets/images/background.png');

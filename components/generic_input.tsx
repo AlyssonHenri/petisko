@@ -2,16 +2,13 @@ import React, { useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { CustomInputProps } from '@/interfaces/customInput';
 import { Icon } from 'react-native-paper';
-import Colors from '@/constants/Colors';
 
 const CustomInput: React.FC<CustomInputProps> = ({
-iconName,
+  iconName,
   placeholder,
   errorMessage,
   isPassword = false,
   isPasswd = false,
-  outputFunc,
-  showError,
   style,
   ...rest
 }) => {
@@ -72,18 +69,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
-    borderRadius: 8,
+    borderRadius: 13,
     backgroundColor: 'white',
     minHeight: 50,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 4,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
     }),
   },
