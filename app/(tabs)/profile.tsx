@@ -6,20 +6,38 @@ import getUser from "@/services/getUserInfo";
 import { useState, useEffect } from 'react';
 import { router } from "expo-router";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function ProfileScreen() {
     const image = require('../../assets/images/background.png');
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useFocusEffect(() => {
         async function fetchUser() {
-            const user = await getUser();
-            setUserInfo(user);
+            setLoading(true);
+            try {
+                const user = await getUser();
+                setUserInfo(user);
+            } catch (error) {
+                console.error("Erro ao carregar perfil:", error);
+            } finally {
+                setLoading(false);
+            }
         }
         fetchUser();
     });
+
+    if (loading) {
+        return (
+            <ImageBackground source={image} style={styles.imageBackground}>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={Colors.laranjaVariado} />
+                </View>
+            </ImageBackground>
+        );
+    }
 
     if (userInfo && userInfo.name) {
         return (
@@ -61,6 +79,11 @@ const styles = StyleSheet.create({
         resizeMode: 'cover',
         justifyContent: 'center',
         alignItems: 'stretch',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     overlayContent: {
         marginTop: 50,
