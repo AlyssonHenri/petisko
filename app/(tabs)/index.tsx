@@ -3,14 +3,17 @@ import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import LoginInput from '@/components/custom-login-input';
 import loginUser from '@/services/login';
-import { useState } from 'react';
 import { router } from 'expo-router';
+import { SetStateAction, useEffect, useState, useMemo, useCallback } from 'react';
+import CustomInput from '@/components/generic_input';
+
 
 export default function LoginScreen() {
   const [user, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordCheckTouched, setPasswordCheckTouched] = useState(false);
 
   const handleLoginPress = async (user: string, password: string) => {
     setLoading(true);
@@ -40,11 +43,26 @@ export default function LoginScreen() {
         </View>
         <View style={styles.content}>
           <View style={styles.fieldsContainer}>
-            <LoginInput outputFunc={(dado) => { setUsername(dado) }} placeholder='Digite seu usuário' errorMessage='O usuário precisa estar digitado.' />
-            <LoginInput outputFunc={(dado) => setPassword(dado)} isPasswd={true} placeholder='Digite sua senha' errorMessage='O usuário precisa estar digitado.' />
+              <CustomInput
+                onChangeText={(dado: SetStateAction<string>) => setUsername(dado)}
+                onFocus={() => setPasswordCheckTouched(true)}
+                placeholder='Digite seu login'
+                //errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
+                iconName='account'
+                value={user}
+              />
+              <CustomInput
+                onChangeText={(dado: SetStateAction<string>) => setPassword(dado)}
+                onFocus={() => setPasswordCheckTouched(true)}
+                isPassword={true} 
+                placeholder='Digite sua senha'
+                //errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
+                iconName='lock-check'
+                value={password}
+              />
           </View>
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {/* {error ? <Text style={styles.errorText}>{error}</Text> : null} */}
 
           <TouchableOpacity onPress={() => router.push('/register')}>
             <Text style={styles.registerText}>Cadastre-se</Text>

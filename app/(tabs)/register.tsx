@@ -18,6 +18,8 @@ interface ValidationResult {
 }
 
 export default function RegisterScreen() {
+  
+  const [actualError, setActualError] = useState('');
   const [user, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordCheck, setPasswordCheck] = useState('');
@@ -64,6 +66,7 @@ export default function RegisterScreen() {
 
   useFocusEffect(
     useCallback(() => {
+
       setUsername('');
       setPassword('');
       setPasswordCheck('');
@@ -230,13 +233,19 @@ export default function RegisterScreen() {
       return;
     }
 
-    try {
-      await registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state as string, "city": city as string });
-      await loginUser({ "username": userName, "password": password });
-      router.push('/profile');
-    } catch (err) {
-      console.error('Erro no registro ou login:', err);
-      Alert.alert('Erro', 'Falha no registro ou login. Tente novamente.');
+     const response = await registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state, "city": city })
+
+    if (response.success){
+      try {
+        router.push('/');
+      } catch (err) {
+        console.log('Erro em redirecionar a página:', err);
+      }
+    }
+    else {
+      const firstKey = Object.keys(response.data)[0];
+      const firstMessage = response.data[firstKey][0];
+      setActualError(firstMessage)
     }
   };
 

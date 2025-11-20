@@ -4,6 +4,7 @@ import { API_BASE_URL } from '@/constants/ApiConfig';
 import { RootUser } from '@/interfaces/user';
 
 export default async function updateUser(userData: Partial<RootUser>, imageUri?: string, imageType?: string): Promise<{ success: boolean; message: string }> {
+    console.log(userData)
     try {
         const bearerToken = await AsyncStorage.getItem('bearer');
         let data: any = userData;
@@ -24,6 +25,8 @@ export default async function updateUser(userData: Partial<RootUser>, imageUri?:
             data = formData;
             (headers as any)['Content-Type'] = 'multipart/form-data';
         }
+        console.log(data)
+
 
         const response = await axios.patch(`${API_BASE_URL}/users/update_me/`, data, {
             headers
@@ -34,6 +37,7 @@ export default async function updateUser(userData: Partial<RootUser>, imageUri?:
         };
     } catch (error: any) {
         console.error('Erro ao atualizar usuário:', error);
+        console.log(error.response)
         console.error('Response data:', error.response?.data);
         const message = error.response?.data?.detail || error.response?.data?.message || 'Não foi possível atualizar o perfil. Tente novamente.';
         return {

@@ -3,7 +3,7 @@ import Colors from "@/constants/Colors";
 import { RootUser } from "@/interfaces/user";
 import getUser from "@/services/getUserInfo";
 import updateUser, { updateUserImage } from "@/services/updateUserInfo";
-import { useState, useEffect } from 'react';
+import React,{ useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as ImagePicker from 'expo-image-picker';
@@ -43,7 +43,15 @@ export default function EditProfileScreen() {
     const [cityList, setCityList] = useState<{ label: string; value: string }[]>([]);
 
  
-    useEffect(() => {
+    useFocusEffect(React.useCallback(() => {
+
+        setUserInfo(null);
+        setName('');
+        setUsername('');
+        setState('');
+        setCity('');
+        setProfileImage('');
+
         async function loadData() {
             try {
                 const user = await getUser();
@@ -86,7 +94,7 @@ export default function EditProfileScreen() {
         }
 
         loadData();
-    }, []);
+    }, []));
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -146,11 +154,11 @@ export default function EditProfileScreen() {
             }
 
             let result;
-            if (Object.keys(changes).length === 0 && imageChanged) {
+            if (imageChanged) {
                 result = await updateUserImage(profileImage);
-            } else {
-                result = await updateUser(changes, imageChanged ? profileImage : undefined, imageType);
-            }
+            } 
+            result = await updateUser(changes, undefined, imageType);
+            
 
             if (result.success) {
                 Alert.alert('Sucesso', result.message, [
