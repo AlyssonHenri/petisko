@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { CustomInputProps } from '@/interfaces/customInput';
 import { Icon } from 'react-native-paper';
 import MaskInput from 'react-native-mask-input';
-import Colors from '@/constants/Colors';
 
 interface MaskedInputProps extends Omit<CustomInputProps, 'onChangeText' | 'value'> {
   mask: (string | RegExp)[];

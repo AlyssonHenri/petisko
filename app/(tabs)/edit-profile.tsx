@@ -43,19 +43,9 @@ export default function EditProfileScreen() {
     const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
     const [cityList, setCityList] = useState<{ label: string; value: string }[]>([]);
 
+ 
     useEffect(() => {
-        getStates().then(statesApi => {
-            const formatted = statesApi.map(state => ({
-                label: state.name,
-                value: state.state_code,
-            }));
-            setStateList(formatted);
-        });
-    }, []);
-
-    useFocusEffect(() => {
         async function loadData() {
-            setLoading(true);
             try {
                 const user = await getUser();
                 if (!user) {
@@ -97,7 +87,7 @@ export default function EditProfileScreen() {
         }
 
         loadData();
-    });
+    }, []);
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
