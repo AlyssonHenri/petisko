@@ -1,4 +1,4 @@
-import { Image, Keyboard, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import { Image, Keyboard, StyleSheet, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import LoginInput from '@/components/custom-login-input';
@@ -28,7 +28,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <Pressable onPress={() => Keyboard.dismiss()} style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.header}>
           <View>
@@ -64,7 +64,7 @@ export default function LoginScreen() {
 
         </View>
       </View>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 }
 
