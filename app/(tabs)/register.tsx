@@ -48,7 +48,7 @@ export default function RegisterScreen() {
         value: state.state_code,
       }));
         setStateList(formatted);
-        setParte(1)
+        setParte(1 )
     })
   }, [])
 

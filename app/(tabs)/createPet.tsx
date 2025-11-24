@@ -1,12 +1,11 @@
 import { image } from "@/constants/bg";
 import Colors from "@/constants/Colors";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Alert, FlatList, Image, ImageBackground, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { SetStateAction, useState } from "react";
 import CustomInput from "@/components/generic_input";
 import { Icon } from 'react-native-paper';
-
+import { useMemo } from "react";
 
 export default function createPet(){
     const [nomePet, setNomePet] = useState('');
@@ -56,24 +55,34 @@ export default function createPet(){
         setVacinas(prev => [...prev, novaVacina])
     }
     
-    const validateField = (field: string, value: string, touched: boolean, ...args: any[]): ValidationResult => {
+    const validateField = (field: string, value: string, touched: boolean) => {
         if (!touched) {
             return { isValid: true, message: '' };
         }
 
         switch (field) {
-        case 'name':
-            if (!value.trim()) return { isValid: false, message: 'Nome é obrigatório' };
-            if (value.trim().length < 2) return { isValid: false, message: 'Nome deve ter pelo menos 2 caracteres' };
-            if (value.trim().length > 500) return { isValid: false, message: 'Nome deve ter no máximo 500 caracteres' };
-            return { isValid: true, message: '' };
-
-        default:
-            return { isValid: true, message: '' };
+            case 'nome':
+                if (!value.trim()) return { isValid: false, message: 'Nome do pet é obrigatório' };
+                if (value.trim().length < 0) return { isValid: false, message: 'Nome deve ter pelo menos 2 caracteres' };
+                if (value.trim().length > 500) return { isValid: false, message: 'Nome deve ter no máximo 500 caracteres' };
+                break;
+            case 'idade':
+                if (!value.trim()) return { isValid: false, message: 'Idade é obrigatória' };
+                break;
+            case 'raca':
+                if (!value.trim()) return { isValid: false, message: 'Raça é obrigatória' };
+                if (value.trim().length < 0) return { isValid: false, message: 'Raça deve ter pelo menos 2 caracteres' };
+                if (value.trim().length > 500) return { isValid: false, message: 'Raça deve ter no máximo 500 caracteres' };
+                break;
+            default:
+                break;
         }
+        return { isValid: true, message: '' };
     };
 
-    const nameError = useMemo(() => validateField('name', user, nameTouched), [user, nameTouched]);
+    const nameError = useMemo(() => validateField('nome', nomePet, nomeTouched), [nomePet, nomeTouched]);
+    const idadeError = useMemo(() => validateField('idade', idadePet, idadeTouched), [idadePet, idadeTouched]);
+    const racaError = useMemo(() => validateField('raca', raca, racaTouched), [raca, racaTouched]);
     
     return (
            <ImageBackground source={image} style={styles.imageBackground}>
@@ -140,17 +149,18 @@ export default function createPet(){
                             onChangeText={(dado: SetStateAction<string>) => setIdadePet(dado)}
                             onFocus={() => setIdadeTouched(true)}
                             placeholder='Idade'
-                            // errorMessage={!passwordError.isValid ? passwordError.message : ''}
+                            errorMessage={!idadeError.isValid ? idadeError.message : ''}
                             iconName='numeric-1'
+                            keyboardType="numeric"
                             value={idadePet}
                         />
                         <CustomInput
                             onChangeText={(dado: SetStateAction<string>) => setRaca(dado)}
                             onFocus={() => setRacaTouched(true)}
                             placeholder='Raça'
-                            // errorMessage={!passwordError.isValid ? passwordError.message : ''}
+                            errorMessage={!racaError.isValid ? racaError.message : ''}
                             iconName='paw'
-                            value={nomePet}
+                            value={raca}
                         />
 
                             <Text style={styles.vacinaTitle}>Vacinas</Text>
