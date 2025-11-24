@@ -4,7 +4,7 @@ import { RootUser } from "@/interfaces/user";
 import getUser from "@/services/getUserInfo";
 import updateUser, { updateUserImage } from "@/services/updateUserInfo";
 import React,{ useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as ImagePicker from 'expo-image-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -113,7 +113,7 @@ export default function EditProfileScreen() {
 
         if (!result.canceled && result.assets[0]) {
             setProfileImage(result.assets[0].uri);
-            setImageType(result.assets[0].type || 'image/jpeg');
+            //setImageType(result.assets[0].type || 'image/jpeg');
         }
     };
 

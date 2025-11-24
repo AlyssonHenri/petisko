@@ -8,9 +8,9 @@ import { router } from "expo-router";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
+import { image } from "@/constants/bg";
 
 export default function ProfileScreen() {
-    const image = require('../../assets/images/background.png');
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
 
     useFocusEffect(React.useCallback(() => {
@@ -45,9 +45,11 @@ export default function ProfileScreen() {
                     </View>
 
                     <Text style={styles.sectionTitle}>Meus Pets</Text>
-
+                    <TouchableOpacity onPress={() => router.push('/createPet')}>
+                    <Text>Cadastre um novo Pet</Text>
+                    </TouchableOpacity>
                     <ScrollView style={styles.petsContainer}>
-                        <CardPet name={'Robert'} imageSrc={'../../assets/images/mockdog.png'} typePet={'Caramelo'} avaliable={true} canEdit={true} />
+                        {/* <CardPet name={'Robert'} imageSrc={'../../assets/images/mockdog.png'} typePet={'Caramelo'} avaliable={true} canEdit={true} /> */}
                     </ScrollView>
 
                 </ScrollView>
