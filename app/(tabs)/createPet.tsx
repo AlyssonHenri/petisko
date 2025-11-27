@@ -1,23 +1,39 @@
 import { image } from "@/constants/bg";
 import Colors from "@/constants/Colors";
-import { Alert, FlatList, Image, ImageBackground, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
-import { SetStateAction, useState } from "react";
+import React, { SetStateAction, useState } from "react";
 import CustomInput from "@/components/generic_input";
 import { Icon } from 'react-native-paper';
 import { useMemo } from "react";
+import { rootPet, Vacina } from '@/interfaces/pet';
+import { RootUser } from "@/interfaces/user";
+import { useFocusEffect } from "@react-navigation/native";
+import getUser from "@/services/getUserInfo";
+import registerPet from "@/services/pet";
+import { SelectSwitch } from "@/components/select-switch";
+
 
 export default function createPet(){
     const [nomePet, setNomePet] = useState('');
     const [idadePet, setIdadePet] = useState('');
     const [raca, setRaca] = useState('');
-    const [vacinas, setVacinas] = useState<{nome: string, id: string}[]>([]);
+    const [sexo, setSexo] = useState('');
+    const [vacinas, setVacinas] = useState<Vacina[]>([]);
     const [images, setImages] = useState<string[]>([]);
 
     const [nomeTouched, setNomeTouched] = useState(false);
     const [idadeTouched, setIdadeTouched] = useState(false);
     const [racaTouched, setRacaTouched] = useState(false);
+    const [userInfo, setUserInfo] = useState<RootUser | null>(null);
 
+        useFocusEffect( React.useCallback(() => {
+            async function fetchUser() {
+                const user = await getUser();
+                setUserInfo(user);
+            }
+            fetchUser();
+        }, []))
 
     const pickImage = async (index: number) => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -54,10 +70,14 @@ export default function createPet(){
 
         setVacinas(prev => [...prev, novaVacina])
     }
+
+    function handleCadPet(pet: rootPet): void {
+        registerPet(userInfo?.id!, pet)
+    }
     
     const validateField = (field: string, value: string, touched: boolean) => {
         if (!touched) {
-            return { isValid: true, message: '' };
+            return { isValid: false, message: '' };
         }
 
         switch (field) {
@@ -83,8 +103,11 @@ export default function createPet(){
     const nameError = useMemo(() => validateField('nome', nomePet, nomeTouched), [nomePet, nomeTouched]);
     const idadeError = useMemo(() => validateField('idade', idadePet, idadeTouched), [idadePet, idadeTouched]);
     const racaError = useMemo(() => validateField('raca', raca, racaTouched), [raca, racaTouched]);
+
+    const isFormValid = useMemo(() => nameError.isValid && idadeError.isValid && racaError.isValid, [nameError, idadeError, racaError])
     
     return (
+        <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
            <ImageBackground source={image} style={styles.imageBackground}>
                     <View style={styles.imagesPet}>
                         <TouchableOpacity onPress={() => pickImage(0)}>
@@ -137,6 +160,14 @@ export default function createPet(){
                     <View style={{flex: 1, flexGrow: 3}}>
 
                     <View style={styles.inputGroup}>
+                        <View style={styles.switchContainer}>
+                            <SelectSwitch
+                                field_1='macho'
+                                field_2='femea'
+                                selected={sexo}
+                                onSelect={setSexo}
+                            />
+                        </View>
                         <CustomInput
                             onChangeText={(dado: SetStateAction<string>) => setNomePet(dado)}
                             onFocus={() => setNomeTouched(true)}
@@ -165,7 +196,6 @@ export default function createPet(){
 
                             <Text style={styles.vacinaTitle}>Vacinas</Text>
                            
-
                             <FlatList
                                 data={vacinas}
                                 style={{flex: 1 }}
@@ -185,14 +215,41 @@ export default function createPet(){
                                     />
                                 )}
                             />
+                            </View>
+                            
                             <TouchableOpacity onPress={addInput} style={{backgroundColor: Colors.laranja, borderRadius: 5, alignItems: 'center', marginBottom: 40}}>
                                 <View>
                                     <Icon source='plus' size={50} color="white"/>
                                 </View>
                             </TouchableOpacity>
-                            </View>
+                    </View>
+
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                            style={[
+                                    styles.registerButton,
+                                    !isFormValid && styles.registerButtonDisabled
+                                ]}
+                            onPress={() => handleCadPet(
+                                {name: nomePet,
+                                age: idadePet,
+                                img1: images[0],
+                                img2: images[1],
+                                img3: images[2],
+                                img4: images[3],
+                                sexo: "M",
+                                raca: raca,
+                                vacinas: vacinas})}
+                            disabled={false}
+                        >
+                            <Text>
+                                Cadastrar
+                            </Text>
+                        </TouchableOpacity>
                     </View>
             </ImageBackground>
+        </KeyboardAvoidingView>
+            
     )
 }
 
@@ -220,7 +277,6 @@ const styles = StyleSheet.create({
         borderRadius: 75,
         backgroundColor: '#fd7f36c2'
     },
-
     picture: {
         width: 70,
         height: 70,
@@ -232,8 +288,6 @@ const styles = StyleSheet.create({
     inputGroup: {
         flex: 1
     },
-
-    
     label: {
         fontFamily: 'NunitoBold',
         fontSize: 16,
@@ -252,10 +306,36 @@ const styles = StyleSheet.create({
         color: Colors.preto,
     },
     vacinaTitle: {
-
         fontSize: 32,
         fontFamily: 'NunitoBold',
         color: Colors.laranjaVariado
+    },
+    registerButton: {
+        backgroundColor: Colors.laranja,
+        paddingVertical: 15,
+        paddingHorizontal: 60,
+        borderRadius: 100,
+        shadowColor: '#000',
+        shadowOffset: {
+        width: 0,
+        height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+        minWidth: 200,
+        alignItems: 'center'
+    },
+    registerButtonDisabled: {
+        backgroundColor: '#cccccc',
+        shadowOpacity: 0.1,
+        elevation: 2,
+    },
+    switchContainer: {
+        display: 'flex',
+        width: '100%',
+        height: 70,
+        alignItems: 'center',
+        justifyContent: 'center'
     }
- 
 });
