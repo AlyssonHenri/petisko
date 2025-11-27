@@ -23,15 +23,15 @@ const CustomInput: React.FC<CustomInputProps> = ({
       <View
         style={[
           styles.inputContainer,
-          errorMessage ? styles.errorBorder : styles.defaultBorder,
+          errorMessage ? styles.errorBorder : null, 
         ]}>
 
         {iconName ? (
           <View style={styles.icon}>
             <Icon
               source={iconName}
-              size={20}
-              color={errorMessage ? '#FF0000' : '#888'}
+              size={24} 
+              color={errorMessage ? '#FF0000' : '#555'} 
             />
           </View>
         ) : null}
@@ -69,24 +69,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
-    borderRadius: 13,
+    borderRadius: 16,
     backgroundColor: 'white',
-    minHeight: 50,
+    minHeight: 56,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 3,
+        elevation: 5,
+        shadowColor: '#000',
       },
     }),
-  },
-  defaultBorder: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   errorBorder: {
     borderWidth: 1,
@@ -99,6 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#333',
+    fontWeight: '500',
     paddingVertical: 10,
   },
   eyeIcon: {
