@@ -233,7 +233,7 @@ export default function RegisterScreen() {
       return;
     }
 
-     const response = await registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state, "city": city })
+     const response = await registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state ?? '', "city": city ?? '' })
 
     if (response.success){
       try {

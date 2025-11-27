@@ -2,7 +2,7 @@ import axios from 'axios';
 import { rootPet } from '@/interfaces/pet';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
-export default async function registerPet(id, pet: rootPet) {
+export default async function registerPet(id: number, pet: rootPet) {
     try {
         const response = await axios.post(`${API_BASE_URL}/users/${id}/add/`, {
             name: pet.name,
