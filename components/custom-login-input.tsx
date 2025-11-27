@@ -1,5 +1,4 @@
 import { StyleSheet, View } from "react-native"
-//import { Input, Icon } from '@rneui/themed';
 import Colors from "@/constants/Colors";
 import { useState } from "react";
 import { TextInput, useTheme } from "react-native-paper";
@@ -18,15 +17,14 @@ export default function LoginInput({placeholder, errorMessage, isPasswd = false,
     const theme = {
       ...MD3LightTheme,
       roundness: 10,
-      isV3: true,
       colors: {
           ...MD3LightTheme.colors,
           primary: Colors.amarelo,        
           outline: Colors.amarelo,        
           onSurface: Colors.amarelo,       
           onSurfaceVariant: Colors.amarelo, 
-          surface: 'white',                
-          background: 'white',
+          surface: Colors.creme,                
+          background: Colors.creme,
           error: Colors.amarelo,
 
       },
@@ -39,7 +37,7 @@ export default function LoginInput({placeholder, errorMessage, isPasswd = false,
     return (
       <View>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: Colors.creme }]}
           mode="outlined"
           placeholder={placeholder}
           value={value}

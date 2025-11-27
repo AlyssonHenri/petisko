@@ -1,14 +1,16 @@
-import { View } from "@/components/Themed";
+import { image } from "@/constants/bg";
 import Colors from "@/constants/Colors";
 import { RootUser } from "@/interfaces/user";
 import getUser from "@/services/getUserInfo";
 import updateUser, { updateUserImage } from "@/services/updateUserInfo";
-import { useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useState, useCallback } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import getStates, { getCitiesFromState } from '@/controllers/states-controller';
+import { Icon } from 'react-native-paper';
+import { Header } from "@/components/header";
+import CustomInput from "@/components/generic_input";
 import {
     Image,
     ImageBackground,
@@ -16,76 +18,81 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    TextInput,
     Alert,
-    ActivityIndicator
+    ActivityIndicator,
+    View,
+    KeyboardAvoidingView,
+    Platform
 } from "react-native";
 
 export default function EditProfileScreen() {
-    const image = require('../../assets/images/background.png');
     const router = useRouter();
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-
-    // Estados para os campos editáveis
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [state, setState] = useState('');
     const [city, setCity] = useState('');
     const [profileImage, setProfileImage] = useState('');
     const [imageType, setImageType] = useState('');
-
-    // Estados para dropdowns
     const [openState, setOpenState] = useState(false);
     const [openCity, setOpenCity] = useState(false);
     const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
     const [cityList, setCityList] = useState<{ label: string; value: string }[]>([]);
 
-    useEffect(() => {
-            async function loadData() {
-                try {
-                    const user = await getUser();
-                    if (!user) {
-                        setLoading(false);
-                        return;
-                    }
+    useFocusEffect(useCallback(() => {
+        setUserInfo(null);
+        setName('');
+        setUsername('');
+        setState('');
+        setCity('');
+        setProfileImage('');
 
-                    setUserInfo(user);
-                    setName(user.name || '');
-                    setUsername(user.username || '');
-                    setProfileImage(user.img || '');
-
-                    const userStateName = user.state || '';
-                    const userCityName = user.city || '';
-
-                    const statesApi = await getStates();
-                    const formattedStates = statesApi.map(state => ({
-                        label: state.name,
-                        value: state.state_code,
-                    }));
-                    setStateList(formattedStates);
-                    const initialState = formattedStates.find(s => s.label === userStateName);
-
-                    if (initialState) {
-                        setState(initialState.value);
-                        const formattedCities = await getCities(initialState.label);
-                        const initialCity = formattedCities.find(c => c.value === userCityName);
-
-                        if (initialCity) {
-                            setCity(initialCity.value);
-                        }
-                    }
-                } catch (error) {
-                    console.error("Falha ao carregar dados:", error);
-                    Alert.alert("Erro", "Não foi possível carregar os dados do perfil.");
-                } finally {
+        async function loadData() {
+            try {
+                const user = await getUser();
+                if (!user) {
                     setLoading(false);
+                    return;
                 }
-            }
 
-            loadData();
-        }, []);
+                setUserInfo(user);
+                setName(user.name || '');
+                setUsername(user.username || '');
+                setProfileImage(user.img || '');
+
+                const userStateName = user.state || '';
+                const userCityName = user.city || '';
+
+                const statesApi = await getStates();
+                const formattedStates = statesApi.map(state => ({
+                    label: state.name,
+                    value: state.state_code,
+                }));
+                setStateList(formattedStates);
+                
+                const initialState = formattedStates.find(s => s.label === userStateName);
+
+                if (initialState) {
+                    setState(initialState.value);
+                    const formattedCities = await getCities(initialState.label);
+                    const initialCity = formattedCities.find(c => c.value === userCityName);
+
+                    if (initialCity) {
+                        setCity(initialCity.value);
+                    }
+                }
+            } catch (error) {
+                console.error("Falha ao carregar dados:", error);
+                Alert.alert("Erro", "Não foi possível carregar os dados do perfil.");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadData();
+    }, []));
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -104,7 +111,6 @@ export default function EditProfileScreen() {
 
         if (!result.canceled && result.assets[0]) {
             setProfileImage(result.assets[0].uri);
-            setImageType(result.assets[0].type || 'image/jpeg');
         }
     };
 
@@ -120,7 +126,6 @@ export default function EditProfileScreen() {
 
     const handleSave = async () => {
         setSaving(true);
-
         try {
             const selectedState = stateList.find(s => s.value === state);
             const stateName = selectedState ? selectedState.label : state;
@@ -145,18 +150,14 @@ export default function EditProfileScreen() {
             }
 
             let result;
-            if (Object.keys(changes).length === 0 && imageChanged) {
+            if (imageChanged) {
                 result = await updateUserImage(profileImage);
-            } else {
-                result = await updateUser(changes, imageChanged ? profileImage : undefined, imageType);
             }
+            result = await updateUser(changes, undefined, imageType);
 
             if (result.success) {
                 Alert.alert('Sucesso', result.message, [
-                    {
-                        text: 'OK',
-                        onPress: () => router.push('/profile')
-                    }
+                    { text: 'OK', onPress: () => router.push('/profile') }
                 ]);
             } else {
                 Alert.alert('Erro', result.message);
@@ -172,123 +173,131 @@ export default function EditProfileScreen() {
         return (
             <ImageBackground source={image} style={styles.imageBackground}>
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={Colors.laranjaVariado} />
+                    <ActivityIndicator size="large" color={Colors.laranja} />
                 </View>
             </ImageBackground>
         );
     }
 
     return (
-        <ImageBackground source={image} style={styles.imageBackground}>
-            <ScrollView style={styles.overlayContent}>
-                <TouchableOpacity onPress={() => router.push('/profile')} style={styles.backButton}>
-                    <FontAwesome name="arrow-left" size={24} color={Colors.preto} />
-                </TouchableOpacity>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+            <ImageBackground source={image} style={styles.imageBackground}>
+                
+                <Header 
+                    title="Editar Perfil" 
+                    onBackPress={() => router.push('/profile')} 
+                />
 
-                <View style={styles.topPage}>
-                    <Text style={styles.title}>Editar Perfil</Text>
+                <ScrollView 
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.topPage}>
+                        <TouchableOpacity onPress={pickImage} style={styles.profilePicContainer}>
+                            <View style={styles.profilePicWrapper}>
+                                <Image
+                                    style={styles.profilePic}
+                                    source={profileImage
+                                        ? { uri: profileImage }
+                                        : { uri: "https://img.freepik.com/vetores-premium/icone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg?semt=ais_hybrid&w=740&q=80" }
+                                    }
+                                />
+                                <View style={styles.cameraIconContainer}>
+                                    <Icon source="camera" size={20} color={Colors.creme} />
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                        <Text style={styles.changePhotoText}>Alterar foto</Text>
+                    </View>
 
-                    <TouchableOpacity onPress={pickImage} style={styles.profilePicContainer}>
-                        <Image
-                            style={styles.profilePic}
-                            source={profileImage
-                                ? { uri: profileImage }
-                                : {
-                                    uri: "https://img.freepik.com/vetores-premium/icone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg?semt=ais_hybrid&w=740&q=80",
-                                }
-                            }
-                        />
-                        <View style={styles.cameraIconContainer}>
-                            <FontAwesome name="camera" size={20} color={Colors.creme} />
-                        </View>
-                    </TouchableOpacity>
-
-                    <Text style={styles.changePhotoText}>Toque para alterar a foto</Text>
-                </View>
-
-                <View style={styles.formContainer}>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Nome</Text>
-                        <TextInput
-                            style={styles.input}
+                    <View style={styles.formContainer}>
+                        
+                        <CustomInput
                             value={name}
                             onChangeText={setName}
-                            placeholder="Digite seu nome"
-                            placeholderTextColor="#999"
+                            placeholder="Nome Completo"
+                            iconName="account"
                         />
-                    </View>
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Nome de usuário</Text>
-                        <TextInput
-                            style={styles.input}
+                        <CustomInput
                             value={username}
                             onChangeText={setUsername}
-                            placeholder="Digite seu username"
-                            placeholderTextColor="#999"
+                            placeholder="Nome de Usuário"
+                            iconName="at"
                             autoCapitalize="none"
                         />
-                    </View>
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Estado</Text>
-                        <DropDownPicker
-                            open={openState}
-                            value={state}
-                            items={stateList}
-                            setOpen={setOpenState}
-                            setValue={setState}
-                            setItems={setStateList}
-                            style={styles.input}
-                            textStyle={styles.pickerInput}
-                            listMode="MODAL"
-                            placeholder="Selecione seu estado"
-                            onChangeValue={(value) => {
-                                if (value) {
-                                    const selectedState = stateList.find(item => item.value === value);
-                                    const stateName = selectedState!.label;
-                                    setCity('');
-                                    getCities(stateName);
-                                }
-                            }}
-                        />
-                    </View>
+                        <View style={styles.dropdownWrapper}>
+                            <View style={styles.iconContainer}>
+                                <Icon source="map-marker" size={24} color="#555" />
+                            </View>
+                            <View style={{flex: 1}}>
+                                <DropDownPicker
+                                    open={openState}
+                                    value={state}
+                                    items={stateList}
+                                    setOpen={setOpenState}
+                                    setValue={setState}
+                                    setItems={setStateList}
+                                    style={styles.dropdownStyle}
+                                    textStyle={styles.dropdownText}
+                                    placeholder="Selecione seu estado"
+                                    listMode="MODAL"
+                                    onChangeValue={(value) => {
+                                        if (value) {
+                                            const selectedState = stateList.find(item => item.value === value);
+                                            const stateName = selectedState!.label;
+                                            setCity('');
+                                            getCities(stateName);
+                                        }
+                                    }}
+                                />
+                            </View>
+                        </View>
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Cidade</Text>
-                        <DropDownPicker
-                            open={openCity}
-                            value={city}
-                            items={cityList}
-                            setOpen={setOpenCity}
-                            setValue={setCity}
-                            setItems={setCityList}
-                            style={styles.input}
-                            textStyle={styles.pickerInput}
-                            listMode="MODAL"
-                            disabled={!state}
-                            placeholder="Selecione sua cidade"
-                        />
-                    </View>
+                        <View style={[styles.dropdownWrapper, { zIndex: -1 }]}>
+                            <View style={styles.iconContainer}>
+                                <Icon source="city" size={24} color="#555" />
+                            </View>
+                            <View style={{flex: 1}}>
+                                <DropDownPicker
+                                    open={openCity}
+                                    value={city}
+                                    items={cityList}
+                                    setOpen={setOpenCity}
+                                    setValue={setCity}
+                                    setItems={setCityList}
+                                    style={styles.dropdownStyle}
+                                    textStyle={styles.dropdownText}
+                                    placeholder="Selecione sua cidade"
+                                    listMode="MODAL"
+                                    disabled={!state}
+                                />
+                            </View>
+                        </View>
 
-                    <View style={styles.buttonContainer}>
+                        <View style={{ height: 20 }} />
+
                         <TouchableOpacity
                             onPress={handleSave}
-                            style={[styles.button, styles.saveButton]}
+                            style={styles.saveButton}
                             disabled={saving}
                         >
                             {saving ? (
-                                <ActivityIndicator color={Colors.creme} />
+                                <ActivityIndicator color="white" />
                             ) : (
-                                <Text style={styles.buttonText}>
-                                    Salvar Alterações
-                                </Text>
+                                <Text style={styles.saveButtonText}>Salvar Alterações</Text>
                             )}
                         </TouchableOpacity>
+
+                        <View style={{ height: 40 }} />
                     </View>
-                </View>
-            </ScrollView>
-        </ImageBackground>
+                </ScrollView>
+            </ImageBackground>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -296,117 +305,117 @@ const styles = StyleSheet.create({
     imageBackground: {
         flex: 1,
         resizeMode: 'cover',
-        justifyContent: 'center',
-        alignItems: 'stretch',
-    },
-    overlayContent: {
-        marginTop: 50,
-        flex: 1,
-        backgroundColor: 'transparent',
-    },
-    backButton: {
-        position: 'absolute',
-        top: 10,
-        left: 20,
-        zIndex: 10,
-        padding: 10,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'transparent',
+    },
+    scrollContent: {
+        paddingTop: 10,
+        paddingHorizontal: 20,
+        paddingBottom: 40,
     },
     topPage: {
         alignItems: 'center',
-        paddingVertical: 20,
-        backgroundColor: 'transparent',
-    },
-    title: {
-        fontFamily: 'NunitoBlack',
-        fontSize: 32,
-        color: Colors.preto,
-        marginBottom: 20,
+        marginBottom: 30,
+        marginTop: 10,
     },
     profilePicContainer: {
-        position: 'relative',
         marginBottom: 10,
     },
-    profilePic: {
-        width: 150,
-        height: 150,
+    profilePicWrapper: {
+        width: 140,
+        height: 140,
         borderRadius: 75,
-        borderWidth: 3,
-        borderColor: Colors.laranjaVariado,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        borderWidth: 4,
+        borderColor: 'white',
+    },
+    profilePic: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 75,
     },
     cameraIconContainer: {
         position: 'absolute',
-        bottom: 5,
-        right: 5,
+        bottom: 0,
+        right: 0,
         backgroundColor: Colors.laranjaVariado,
         width: 40,
         height: 40,
         borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 2,
-        borderColor: Colors.creme,
+        borderWidth: 3,
+        borderColor: 'white',
+        elevation: 4,
     },
     changePhotoText: {
-        fontFamily: 'NunitoMedium',
+        fontFamily: 'NunitoBold',
         fontSize: 14,
         color: Colors.preto,
-        opacity: 0.7,
+        opacity: 0.6,
     },
     formContainer: {
-        paddingHorizontal: 30,
-        paddingBottom: 40,
-        backgroundColor: 'transparent',
+        flex: 1,
     },
-    inputGroup: {
-        marginBottom: 20,
-        backgroundColor: 'transparent',
-    },
-    label: {
-        fontFamily: 'NunitoBold',
-        fontSize: 16,
-        color: Colors.preto,
-        marginBottom: 8,
-    },
-    input: {
-        borderWidth: 2,
-        borderRadius: 10,
-        borderColor: Colors.amarelo,
-        paddingLeft: 20,
-        height: 50,
-        backgroundColor: 'white',
-        fontFamily: 'NunitoMedium',
-        fontSize: 16,
-        color: Colors.preto,
-    },
-    pickerInput: {
-        fontFamily: 'NunitoMedium',
-        fontSize: 16,
-        color: Colors.preto,
-    },
-    buttonContainer: {
-        marginTop: 20,
-        gap: 15,
-        backgroundColor: 'transparent',
-    },
-    button: {
-        padding: 15,
-        borderRadius: 10,
+    dropdownWrapper: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        height: 50,
+        backgroundColor: 'white',
+        borderRadius: 16,
+        paddingHorizontal: 15,
+        marginBottom: 10,
+        minHeight: 56,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+            },
+            android: {
+                elevation: 5,
+                shadowColor: '#000',
+            },
+        }),
+    },
+    dropdownStyle: {
+        borderWidth: 0,
+        backgroundColor: 'transparent',
+        paddingHorizontal: 0,
+    },
+    dropdownText: {
+        fontFamily: 'NunitoMedium',
+        fontSize: 16,
+        color: '#333',
+    },
+    iconContainer: {
+        marginRight: 10,
     },
     saveButton: {
-        backgroundColor: Colors.laranjaVariado,
+        backgroundColor: Colors.laranja,
+        paddingVertical: 18,
+        borderRadius: 30,
+        alignItems: 'center',
+        marginTop: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+        elevation: 8,
     },
-    buttonText: {
+    saveButtonText: {
         fontFamily: 'NunitoBold',
         fontSize: 18,
-        color: Colors.creme,
+        color: 'white',
     },
 });
