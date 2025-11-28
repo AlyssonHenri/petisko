@@ -13,6 +13,7 @@ import registerPet from "@/services/pet";
 import { SelectSwitch } from "@/components/select-switch";
 import { useRouter } from "expo-router";
 import { Header } from "@/components/header";
+import { AddButton } from "@/components/addButton"
 
 export default function CreatePet() {
     const router = useRouter();
@@ -237,10 +238,10 @@ export default function CreatePet() {
                             </ScrollView>
                         </View>
 
-                        <TouchableOpacity onPress={addInput} style={styles.addVacinaBtn}>
-                            <Icon source='plus-circle' size={24} color={Colors.laranja} />
-                            <Text style={styles.addVacinaText}>Adicionar Vacina</Text>
-                        </TouchableOpacity>
+                        <AddButton
+                            title='Adicionar Vacina'
+                            onPress={addInput}
+                        />
 
                         <TouchableOpacity
                             style={[
@@ -387,25 +388,6 @@ const styles = StyleSheet.create({
         color: '#666',
         fontStyle: 'italic',
         marginBottom: 10,
-    },
-    addVacinaBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'white',
-        padding: 12,
-        borderRadius: 12,
-        marginTop: 5,
-        marginBottom: 15,
-        borderWidth: 1,
-        borderColor: Colors.laranja,
-        borderStyle: 'dashed',
-    },
-    addVacinaText: {
-        color: Colors.laranja,
-        marginLeft: 8,
-        fontFamily: 'NunitoBold',
-        fontSize: 16,
     },
     registerButton: {
         backgroundColor: Colors.laranja,
