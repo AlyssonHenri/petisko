@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState, useMemo, useCallback } from "react";
 import CustomInput from "@/components/generic_input";
 import { Icon } from 'react-native-paper';
-import { rootPet, Vacina } from '@/interfaces/pet';
+import { RootPet, Vacina } from '@/interfaces/pet';
 import { RootUser } from "@/interfaces/user";
 import { useFocusEffect } from "@react-navigation/native";
 import getUser from "@/services/getUserInfo";
@@ -47,8 +47,9 @@ export default function CreatePet() {
         useCallback(() => {
             resetForm();
             async function fetchUser() {
-                const user = await getUser();
-                setUserInfo(user);
+                const res = await getUser();
+                const user = res?.data?.user;
+                setUserInfo(user!);
             }
             fetchUser();
             return () => {};
@@ -85,8 +86,12 @@ export default function CreatePet() {
         setVacinas(prev => [...prev, novaVacina]);
     }
 
-    function handleCadPet(pet: rootPet): void {
-        registerPet(userInfo?.id!, pet);
+    function handleCadPet(pet: RootPet): void {
+        const res: any = registerPet(userInfo?.id!, pet);
+        if (res.success){
+            router.push('/profile')
+        }
+        console.log(res.data)
     }
 
     const validateField = (field: string, value: string, touched: boolean) => {
@@ -119,7 +124,7 @@ export default function CreatePet() {
 
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1 }}
+            style={{ flex: 1}}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <ImageBackground source={image} style={styles.imageBackground}>

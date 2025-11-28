@@ -1,4 +1,5 @@
-export interface rootPet {
+export interface IPet {
+    id: string
     name: string,
     age: string,
     img1: string,
@@ -9,6 +10,7 @@ export interface rootPet {
     raca: string,
     vacinas: Vacina[]
 }
+export type RootPet = Omit<IPet, 'id'>
 
 export interface Vacina {
     id: string
