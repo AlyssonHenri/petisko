@@ -14,10 +14,11 @@ export default function CardPet({name, imageSrc, typePet, avaliable, canEdit}: {
                     <Text style={{color: 'white', fontFamily: 'NunitoBold', fontSize: 14, marginTop: -5}}>{typePet}</Text>
                 </View>
                 <View style={{position: 'absolute', bottom: 10, right: 10}}>
-                             <TouchableOpacity onPress={() => {}}  style={styles.editarPerfil}>
-                    <Text style={{textAlign: 'center', fontFamily: 'NunitoBold', fontSize: 16, color: Colors.laranjaVariado}}>Editar <FontAwesome name="edit" size={20} color={Colors.laranjaVariado} />
-
-</Text>
+                <TouchableOpacity onPress={() => {}}  style={styles.editarPerfil}>
+                    <Text style={{textAlign: 'center', fontFamily: 'NunitoBold', fontSize: 16, color: Colors.laranjaVariado}}>
+                        Editar 
+                    </Text>
+                    <FontAwesome name="edit" size={20} color={Colors.laranjaVariado} />
                 </TouchableOpacity>
                 </View>
             </View>

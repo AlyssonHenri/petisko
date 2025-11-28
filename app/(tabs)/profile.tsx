@@ -9,6 +9,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { image } from "@/constants/bg";
+import { AddButton } from "@/components/addButton";
 
 export default function ProfileScreen() {
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
@@ -40,15 +41,19 @@ export default function ProfileScreen() {
                         </View>
                         <TouchableOpacity onPress={() => router.push('/edit-profile')} style={styles.editarPerfil}>
                             <Text style={styles.buttonText}>
-                                Editar Perfil <FontAwesome name="edit" size={20} color="white" /></Text>
+                                Editar Perfil 
+                            </Text>
+                            <FontAwesome style={{ marginLeft: 10}} name="edit" size={20} color="white" />
                         </TouchableOpacity>
                     </View>
 
                     <Text style={styles.sectionTitle}>Meus Pets</Text>
-                    <TouchableOpacity onPress={() => router.push('/createPet')}>
-                    <Text>Cadastre um novo Pet</Text>
-                    </TouchableOpacity>
+
                     <ScrollView style={styles.petsContainer}>
+                        <AddButton
+                            title="Novo Pet"
+                            onPress={() => router.push("/createPet")}
+                        />
                         {/* <CardPet name={'Robert'} imageSrc={'../../assets/images/mockdog.png'} typePet={'Caramelo'} avaliable={true} canEdit={true} /> */}
                     </ScrollView>
 
@@ -110,20 +115,23 @@ const styles = StyleSheet.create({
         height: 40,
     },
     buttonText: {
+        display: 'flex',
         textAlign: 'center',
+        justifyContent: 'center',
         fontFamily: 'NunitoMedium',
+        gap: 20,
         fontSize: 16,
         color: Colors.creme,
-        marginRight: 8
+        marginRight: 0
     },
     sectionTitle: {
         fontFamily: 'NunitoExtraLight',
         fontSize: 32,
         textAlign: 'center',
-        marginTop: 20,
         color: Colors.preto,
     },
     petsContainer: {
+        paddingTop: 0,
         padding: 20,
     },
 });

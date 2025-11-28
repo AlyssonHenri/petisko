@@ -13,13 +13,13 @@ interface SelectSwitchProps {
 }
 
 export const SelectSwitch: React.FC<SelectSwitchProps> = ({ field_1, field_2, selected, onSelect }) => {
-    const handlePress = ( option: string ) => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-        onSelect(option)
+    const handlePress = (option: string) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        onSelect(option);
     }
 
-    const select1 = selected === field_1
-    const select2 = selected === field_2
+    const select1 = selected === field_1;
+    const select2 = selected === field_2;
 
     return (
         <View style={styles.container}>
@@ -53,44 +53,45 @@ export const SelectSwitch: React.FC<SelectSwitchProps> = ({ field_1, field_2, se
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#ffffffff',
-    borderRadius: 30, 
+    backgroundColor: '#EEEEEE', 
+    borderRadius: 50,
     padding: 4,
-    height: 50,
+    height: 56, 
     width: '100%',
-    maxWidth: 300,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 3,
+        elevation: 4,
+        shadowColor: '#000',
       },
     }),
   },
   button: {
     flex: 1, 
-    borderRadius: 25,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
     height: '100%',
   },
   activeButton: {
     backgroundColor: '#E4A985',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.20,
-    shadowRadius: 1.41,
-    elevation: 2,
+    ...Platform.select({
+        ios: {
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.15,
+            shadowRadius: 2,
+        },
+        android: {
+            elevation: 2,
+        }
+    })
   },
   text: {
     fontSize: 16,
@@ -98,8 +99,9 @@ const styles = StyleSheet.create({
   },
   activeText: {
     color: '#FFFFFF', 
+    fontWeight: '700',
   },
   inactiveText: {
-    color: '#555555',
+    color: '#333333',
   },
 });
