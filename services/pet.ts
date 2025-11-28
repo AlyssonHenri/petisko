@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { rootPet } from '@/interfaces/pet';
+import { RootPet } from '@/interfaces/pet';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default async function registerPet(id: number, pet: rootPet) {
+export default async function registerPet(id: number, pet: RootPet) {
     const bearerToken = await AsyncStorage.getItem('bearer');
     let headers = {
         Authorization: "Bearer " + bearerToken,
@@ -11,6 +11,12 @@ export default async function registerPet(id: number, pet: rootPet) {
 
     };
     const formData = new FormData();
+
+    if (pet.sexo === 'macho') {
+        pet.sexo = 'm'
+    } else {
+        pet.sexo = 'f'
+    }
 
     formData.append("name", pet.name);
     formData.append("age", pet.age);
@@ -30,16 +36,15 @@ export default async function registerPet(id: number, pet: rootPet) {
 
 
     try {
-        console.log("URL:", `${API_BASE_URL}/users/${id}/add/`);
 
         const response = await axios.post(`${API_BASE_URL}/users/${id}/add/`, formData, {
             headers: headers
         });
 
         if (response.data) {
-            return response
+            return { success: true }
         }
-    } catch (error) {
+    } catch (error: any) {
         if (axios.isAxiosError(error)) {
             console.log("Status:", error.response?.status);
             console.log("Headers:", error.response?.headers);
@@ -47,6 +52,8 @@ export default async function registerPet(id: number, pet: rootPet) {
         } else {
             console.log("Unexpected error:", error);
         }
+        return { success: false, data: error.response?.data }
+
         throw error; // Re-throw para que o componente possa tratar
     }
 }

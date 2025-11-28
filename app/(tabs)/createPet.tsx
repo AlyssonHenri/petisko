@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState, useMemo, useCallback } from "react";
 import CustomInput from "@/components/generic_input";
 import { Icon } from 'react-native-paper';
-import { rootPet, Vacina } from '@/interfaces/pet';
+import { RootPet, Vacina } from '@/interfaces/pet';
 import { RootUser } from "@/interfaces/user";
 import { useFocusEffect } from "@react-navigation/native";
 import getUser from "@/services/getUserInfo";
@@ -13,6 +13,7 @@ import registerPet from "@/services/pet";
 import { SelectSwitch } from "@/components/select-switch";
 import { useRouter } from "expo-router";
 import { Header } from "@/components/header";
+import { AddButton } from "@/components/addButton"
 
 export default function CreatePet() {
     const router = useRouter();
@@ -46,8 +47,9 @@ export default function CreatePet() {
         useCallback(() => {
             resetForm();
             async function fetchUser() {
-                const user = await getUser();
-                setUserInfo(user);
+                const res = await getUser();
+                const user = res?.data?.user;
+                setUserInfo(user!);
             }
             fetchUser();
             return () => {};
@@ -84,8 +86,12 @@ export default function CreatePet() {
         setVacinas(prev => [...prev, novaVacina]);
     }
 
-    function handleCadPet(pet: rootPet): void {
-        registerPet(userInfo?.id!, pet);
+    function handleCadPet(pet: RootPet): void {
+        const res: any = registerPet(userInfo?.id!, pet);
+        if (res.success){
+            router.push('/profile')
+        }
+        console.log(res.data)
     }
 
     const validateField = (field: string, value: string, touched: boolean) => {
@@ -118,7 +124,7 @@ export default function CreatePet() {
 
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1 }}
+            style={{ flex: 1}}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <ImageBackground source={image} style={styles.imageBackground}>
@@ -237,10 +243,10 @@ export default function CreatePet() {
                             </ScrollView>
                         </View>
 
-                        <TouchableOpacity onPress={addInput} style={styles.addVacinaBtn}>
-                            <Icon source='plus-circle' size={24} color={Colors.laranja} />
-                            <Text style={styles.addVacinaText}>Adicionar Vacina</Text>
-                        </TouchableOpacity>
+                        <AddButton
+                            title='Adicionar Vacina'
+                            onPress={addInput}
+                        />
 
                         <TouchableOpacity
                             style={[
@@ -387,25 +393,6 @@ const styles = StyleSheet.create({
         color: '#666',
         fontStyle: 'italic',
         marginBottom: 10,
-    },
-    addVacinaBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'white',
-        padding: 12,
-        borderRadius: 12,
-        marginTop: 5,
-        marginBottom: 15,
-        borderWidth: 1,
-        borderColor: Colors.laranja,
-        borderStyle: 'dashed',
-    },
-    addVacinaText: {
-        color: Colors.laranja,
-        marginLeft: 8,
-        fontFamily: 'NunitoBold',
-        fontSize: 16,
     },
     registerButton: {
         backgroundColor: Colors.laranja,

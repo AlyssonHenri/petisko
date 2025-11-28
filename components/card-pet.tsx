@@ -1,9 +1,10 @@
+import { API_BASE_URL } from "@/constants/ApiConfig";
 import Colors from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function CardPet({name, imageSrc, typePet, avaliable, canEdit}: {name: string, imageSrc: string, typePet: string, avaliable: boolean, canEdit: boolean}){
-    const imagePet = require('../assets/images/mockdog.png')
+    const imagePet = imageSrc ? { uri: `${API_BASE_URL}/${imageSrc}` } : require('../assets/images/mockdog.png') 
     return (
         <View style={{flex: 1, alignItems: 'center'}}>
             <View style={styles.card}>
@@ -14,10 +15,11 @@ export default function CardPet({name, imageSrc, typePet, avaliable, canEdit}: {
                     <Text style={{color: 'white', fontFamily: 'NunitoBold', fontSize: 14, marginTop: -5}}>{typePet}</Text>
                 </View>
                 <View style={{position: 'absolute', bottom: 10, right: 10}}>
-                             <TouchableOpacity onPress={() => {}}  style={styles.editarPerfil}>
-                    <Text style={{textAlign: 'center', fontFamily: 'NunitoBold', fontSize: 16, color: Colors.laranjaVariado}}>Editar <FontAwesome name="edit" size={20} color={Colors.laranjaVariado} />
-
-</Text>
+                <TouchableOpacity onPress={() => {}}  style={styles.editarPerfil}>
+                    <Text style={{textAlign: 'center', fontFamily: 'NunitoBold', fontSize: 16, color: Colors.laranjaVariado}}>
+                        Editar 
+                    </Text>
+                    <FontAwesome name="edit" size={20} color={Colors.laranjaVariado} />
                 </TouchableOpacity>
                 </View>
             </View>
