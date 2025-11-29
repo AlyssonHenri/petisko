@@ -1,6 +1,6 @@
 import { image } from "@/constants/bg";
 import Colors from "@/constants/Colors";
-import { Alert, Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Button, } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { useState, useMemo, useCallback } from "react";
 import CustomInput from "@/components/generic_input";
@@ -11,9 +11,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import getUser from "@/services/getUserInfo";
 import registerPet from "@/services/pet";
 import { SelectSwitch } from "@/components/select-switch";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Header } from "@/components/header";
 import { AddButton } from "@/components/addButton"
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function CreatePet() {
     const router = useRouter();
@@ -24,37 +25,59 @@ export default function CreatePet() {
     const [sexo, setSexo] = useState('macho');
     const [vacinas, setVacinas] = useState<Vacina[]>([]);
     const [images, setImages] = useState<string[]>([]);
-
     const [nomeTouched, setNomeTouched] = useState(false);
     const [idadeTouched, setIdadeTouched] = useState(false);
     const [racaTouched, setRacaTouched] = useState(false);
-    
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
-
-    const resetForm = () => {
-        setNomePet('');
-        setIdadePet('');
-        setRaca('');
-        setSexo('macho');
-        setVacinas([]);
-        setImages([]);
-        setNomeTouched(false);
-        setIdadeTouched(false);
-        setRacaTouched(false);
-    };
+    const params = useLocalSearchParams();
 
     useFocusEffect(
         useCallback(() => {
-            resetForm();
+            setNomePet('')
+            setIdadePet('')
+            setRaca('')
+            setSexo('m')
+            setVacinas([])
+            setImages([])
+            setNomeTouched(false);
+            setIdadeTouched(false);
+            setRacaTouched(false);
+
+            const petData: RootPet = params.data ? JSON.parse(params.data as string) : null;
+            
+            if (!petData) {
+                return;
+            }
+
             async function fetchUser() {
                 const res = await getUser();
                 const user = res?.data?.user;
                 setUserInfo(user!);
             }
             fetchUser();
+
+            setNomePet(petData.name)
+            setIdadePet(String(petData.age))
+            setRaca(petData.raca)
+            setSexo(petData.sexo === 'm' ? 'macho' : 'femea')
+            setVacinas(petData.vacinas || [])
+            setImages([petData.img1, petData.img2, petData.img3, petData.img4])
+            setNomeTouched(false);
+            setIdadeTouched(false);
+            setRacaTouched(false);
+            
             return () => {};
-        }, [])
+        }, [params.data])
     );
+
+    if (!params.data) {
+        return (
+            <View style={styles.loadingContainer}>
+                <Text>Erro: Nenhum dado de pet encontrado.</Text>
+                <Button title="Voltar" onPress={() => router.back()} />
+            </View>
+        );
+    }
 
     const pickImage = async (index: number) => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -86,7 +109,9 @@ export default function CreatePet() {
         setVacinas(prev => [...prev, novaVacina]);
     }
 
-    async function handleCadPet(pet: RootPet): Promise<void> {
+    async function handleSave(pet: RootPet): Promise<void> {
+        // falta trocar a service pela que faz update
+        // aqui nessa parte
         const res: any = await registerPet(userInfo?.id!, pet);
         if (res.success){
             router.push('/profile')
@@ -153,7 +178,7 @@ export default function CreatePet() {
                                     <TouchableOpacity key={index} onPress={() => pickImage(index)} style={styles.imageWrapper}>
                                         <View style={picStyle}>
                                             {images[index] ? (
-                                                <Image source={{ uri: images[index] }} style={styles.imgFill} />
+                                                <Image source={{ uri: `${API_BASE_URL}${images[index]}` }} style={styles.imgFill} />
                                             ) : (
                                                 <Icon 
                                                     source={isMain ? 'camera-plus' : 'plus'} 
@@ -252,7 +277,7 @@ export default function CreatePet() {
                                 styles.registerButton,
                                 !isFormValid && styles.registerButtonDisabled
                             ]}
-                            onPress={() => handleCadPet({
+                            onPress={() => handleSave({
                                 name: nomePet,
                                 age: idadePet,
                                 img1: images[0],
@@ -265,7 +290,7 @@ export default function CreatePet() {
                             })}
                             disabled={!isFormValid}
                         >
-                            <Text style={styles.registerButtonText}>Cadastrar Pet</Text>
+                            <Text style={styles.registerButtonText}>Editar Pet</Text>
                         </TouchableOpacity>
 
                         <View style={{ height: 40 }} />
@@ -412,5 +437,10 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
