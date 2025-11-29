@@ -3,10 +3,10 @@ import { View } from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import { RootUser } from "@/interfaces/user";
 import getUser from "@/services/getUserInfo";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { router } from "expo-router";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { FlatList, Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { FlatList, Image, ImageBackground, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { image } from "@/constants/bg";
 import { AddButton } from "@/components/addButton";
@@ -15,7 +15,6 @@ import { IPet, RootPet } from "@/interfaces/pet";
 export default function ProfileScreen() {
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
     const [petList, setPetList] = useState<IPet[]>([]);
-
 
     useFocusEffect(React.useCallback(() => {
         async function fetchUser() {
@@ -28,14 +27,21 @@ export default function ProfileScreen() {
             setUserInfo(user!);
         }
         fetchUser();
-    }, [])
-    );
+    }, []));
+
+    const handlePetSelect = (pet: IPet) => {
+        router.push({
+            pathname: '/edit-pet',
+            params: {
+                data: JSON.stringify(pet)
+            }
+        })
+    }
 
     if (userInfo && userInfo.name) {
         return (
             <ImageBackground source={image} style={styles.imageBackground}>
                 <View style={{flex: 1}}>
-                <View style={{flex: 0.8}}>
                     <View style={styles.topPage}>
                         <Image
                             style={styles.profilePic}
@@ -57,28 +63,20 @@ export default function ProfileScreen() {
                     </View>
 
                     <Text style={styles.sectionTitle}>Meus Pets</Text>
-                        <View style={{paddingHorizontal: 10}}>
-
-                            <AddButton
-                                title="Novo Pet"
-                                onPress={() => router.push("/createPet")}
-                            />
-                        </View>
-
-                        
-
-                </View>
-
-                <View style={{flex: 0.6}}>
-
-                <FlatList contentContainerStyle={{ paddingHorizontal: 10, gap: 15}}
-                            data={petList}
-                            renderItem={({item}) => <CardPet name={item.name} imageSrc={item.img1} typePet={item.raca} avaliable={true} canEdit={true} />}
-                            keyExtractor={item => item.id}
+                    <View style={{paddingHorizontal: 10, marginBottom: 15}}>
+                        <AddButton
+                            title="Novo Pet"
+                            onPress={() => router.push("/createPet")}
                         />
-                </View>
-                </View>
+                    </View>
 
+                    <FlatList 
+                        contentContainerStyle={{ paddingHorizontal: 10, gap: 15, paddingBottom: 20}}
+                        data={petList}
+                        renderItem={({item}) => <CardPet pet={item} avaliable={true} canEdit={true} onPressEdit={() => handlePetSelect(item)}/>}
+                        keyExtractor={(item) => item.id.toString()}
+                    />
+                </View>
             </ImageBackground>
         )
     }
@@ -98,7 +96,8 @@ const styles = StyleSheet.create({
     },
     topPage: {
         alignItems: 'center',
-        paddingVertical: 20,
+        paddingTop: 60,
+        paddingBottom: 20,
         backgroundColor: 'transparent'
     },
     profilePic: {
