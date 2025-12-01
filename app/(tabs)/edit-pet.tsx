@@ -5,11 +5,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState, useMemo, useCallback } from "react";
 import CustomInput from "@/components/generic_input";
 import { Icon } from 'react-native-paper';
-import { RootPet, Vacina } from '@/interfaces/pet';
+import { IPet, Vacina } from '@/interfaces/pet';
 import { RootUser } from "@/interfaces/user";
 import { useFocusEffect } from "@react-navigation/native";
 import getUser from "@/services/getUserInfo";
-import registerPet from "@/services/pet";
+import { editPet } from "@/services/pet";
 import { SelectSwitch } from "@/components/select-switch";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Header } from "@/components/header";
@@ -18,13 +18,14 @@ import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function CreatePet() {
     const router = useRouter();
-    
+    const [idPet, setIdPet] = useState('');
     const [nomePet, setNomePet] = useState('');
     const [idadePet, setIdadePet] = useState('');
     const [raca, setRaca] = useState('');
     const [sexo, setSexo] = useState('macho');
     const [vacinas, setVacinas] = useState<Vacina[]>([]);
     const [images, setImages] = useState<string[]>([]);
+    const [imagesInit, setImagesInit] = useState<string[]>([]);
     const [nomeTouched, setNomeTouched] = useState(false);
     const [idadeTouched, setIdadeTouched] = useState(false);
     const [racaTouched, setRacaTouched] = useState(false);
@@ -33,17 +34,19 @@ export default function CreatePet() {
 
     useFocusEffect(
         useCallback(() => {
+            setIdPet('')
             setNomePet('')
             setIdadePet('')
             setRaca('')
             setSexo('m')
             setVacinas([])
             setImages([])
+            setImagesInit([])
             setNomeTouched(false);
             setIdadeTouched(false);
             setRacaTouched(false);
 
-            const petData: RootPet = params.data ? JSON.parse(params.data as string) : null;
+            const petData: IPet = params.data ? JSON.parse(params.data as string) : null;
             
             if (!petData) {
                 return;
@@ -56,12 +59,14 @@ export default function CreatePet() {
             }
             fetchUser();
 
+            setIdPet(petData.id)
             setNomePet(petData.name)
             setIdadePet(String(petData.age))
             setRaca(petData.raca)
             setSexo(petData.sexo === 'm' ? 'macho' : 'femea')
             setVacinas(petData.vacinas || [])
             setImages([petData.img1, petData.img2, petData.img3, petData.img4])
+            setImagesInit([petData.img1, petData.img2, petData.img3, petData.img4])
             setNomeTouched(false);
             setIdadeTouched(false);
             setRacaTouched(false);
@@ -109,10 +114,8 @@ export default function CreatePet() {
         setVacinas(prev => [...prev, novaVacina]);
     }
 
-    async function handleSave(pet: RootPet): Promise<void> {
-        // falta trocar a service pela que faz update
-        // aqui nessa parte
-        const res: any = await registerPet(userInfo?.id!, pet);
+    async function handleSave(pet: IPet): Promise<void> {
+        const res: any = await editPet(pet);
         if (res.success){
             router.push('/profile')
         }
@@ -278,12 +281,13 @@ export default function CreatePet() {
                                 !isFormValid && styles.registerButtonDisabled
                             ]}
                             onPress={() => handleSave({
+                                id: idPet,
                                 name: nomePet,
                                 age: idadePet,
-                                img1: images[0],
-                                img2: images[1],
-                                img3: images[2],
-                                img4: images[3],
+                                img1: images[0] === imagesInit[0] ? '' : images[0] ,
+                                img2: images[1] === imagesInit[1] ? '' : images[1],
+                                img3: images[2] === imagesInit[2] ? '' : images[2],
+                                img4: images[3] === imagesInit[3] ? '' : images[3],
                                 sexo: sexo,
                                 raca: raca,
                                 vacinas: vacinas

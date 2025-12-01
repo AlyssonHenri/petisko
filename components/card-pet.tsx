@@ -4,7 +4,7 @@ import { IPet } from "@/interfaces/pet";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function CardPet({pet, avaliable, canEdit, onPressEdit}: {pet: IPet, avaliable: boolean, canEdit: boolean, onPressEdit?: () => void}){
+export default function CardPet({pet, avaliable, canEdit, onPressEdit, onPressDelete}: {pet: IPet, avaliable: boolean, canEdit: boolean, onPressEdit?: () => void, onPressDelete?: () => void}){
     if(!pet){
         return null
     }
@@ -33,12 +33,21 @@ export default function CardPet({pet, avaliable, canEdit, onPressEdit}: {pet: IP
 
                 <View style={{position: 'absolute', bottom: 10, right: 10}}>
                     {canEdit && (
-                        <TouchableOpacity onPress={onPressEdit}  style={styles.editarPerfil}>
-                            <Text style={{textAlign: 'center', fontFamily: 'NunitoBold', fontSize: 16, color: Colors.laranjaVariado}}>
-                                Editar 
-                                <FontAwesome name="edit" size={20} color={Colors.laranjaVariado} />
-                            </Text>
-                        </TouchableOpacity>
+                        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 15}}>
+                            <TouchableOpacity onPress={onPressEdit}  style={styles.editarPerfil}>
+                                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5}}>
+                                    <Text style={{textAlign: 'center', fontFamily: 'NunitoBold', fontSize: 16, color: Colors.laranjaVariado}}>
+                                        Editar 
+                                    </Text>
+                                    <FontAwesome style={{marginTop: 2}} name="edit" size={20} color={Colors.laranjaVariado} />
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={onPressDelete}  style={styles.editarPerfil}>
+                                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                                    <FontAwesome style={{marginTop: 2}} name="trash" size={20} color={'red'} />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
                     )}
                 </View>
             </View>

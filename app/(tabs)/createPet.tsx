@@ -9,7 +9,7 @@ import { RootPet, Vacina } from '@/interfaces/pet';
 import { RootUser } from "@/interfaces/user";
 import { useFocusEffect } from "@react-navigation/native";
 import getUser from "@/services/getUserInfo";
-import registerPet from "@/services/pet";
+import { registerPet } from "@/services/pet";
 import { SelectSwitch } from "@/components/select-switch";
 import { useRouter } from "expo-router";
 import { Header } from "@/components/header";

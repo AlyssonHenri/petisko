@@ -11,21 +11,23 @@ import { useFocusEffect } from '@react-navigation/native';
 import { image } from "@/constants/bg";
 import { AddButton } from "@/components/addButton";
 import { IPet, RootPet } from "@/interfaces/pet";
+import {deletePet} from '@/services/pet'
 
 export default function ProfileScreen() {
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
     const [petList, setPetList] = useState<IPet[]>([]);
 
+    async function fetchUser() {
+        const res = await getUser();
+        const user = res?.data?.user;
+
+        const petsList = res?.data?.petList;
+        setPetList(petsList!)
+
+        setUserInfo(user!);
+    }
+
     useFocusEffect(React.useCallback(() => {
-        async function fetchUser() {
-            const res = await getUser();
-            const user = res?.data?.user;
-
-            const petsList = res?.data?.petList;
-            setPetList(petsList!)
-
-            setUserInfo(user!);
-        }
         fetchUser();
     }, []));
 
@@ -36,6 +38,11 @@ export default function ProfileScreen() {
                 data: JSON.stringify(pet)
             }
         })
+    }
+
+    const handlePetDelete = (pet: IPet) => {
+        deletePet(pet.id)
+        fetchUser();
     }
 
     if (userInfo && userInfo.name) {
@@ -73,7 +80,7 @@ export default function ProfileScreen() {
                     <FlatList 
                         contentContainerStyle={{ paddingHorizontal: 10, gap: 15, paddingBottom: 20}}
                         data={petList}
-                        renderItem={({item}) => <CardPet pet={item} avaliable={true} canEdit={true} onPressEdit={() => handlePetSelect(item)}/>}
+                        renderItem={({item}) => <CardPet pet={item} avaliable={true} canEdit={true} onPressEdit={() => handlePetSelect(item)} onPressDelete={() => handlePetDelete(item)}/>}
                         keyExtractor={(item) => item.id.toString()}
                     />
                 </View>
