@@ -51,11 +51,14 @@ export default function EditProfileScreen() {
 
         async function loadData() {
             try {
-                const user = await getUser();
-                if (!user) {
+                const data = await getUser();
+                
+                if (!data) {
                     setLoading(false);
                     return;
                 }
+                const user = data.data.user!;
+
 
                 setUserInfo(user);
                 setName(user.name || '');
