@@ -6,7 +6,7 @@ import getUser from "@/services/getUserInfo";
 import React, { useState } from 'react';
 import { router } from "expo-router";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { FlatList, Image, ImageBackground, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { FlatList, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, Platform } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { image } from "@/constants/bg";
 import { AddButton } from "@/components/addButton";
@@ -48,15 +48,17 @@ export default function ProfileScreen() {
     if (userInfo && userInfo.name) {
         return (
             <ImageBackground source={image} style={styles.imageBackground}>
-                <View style={{flex: 1}}>
+                <View style={{flex: 1, backgroundColor: 'transparent'}}>
                     <View style={styles.topPage}>
-                        <Image
-                            style={styles.profilePic}
-                            source={userInfo?.img
-                                ? { uri: userInfo.img }
-                                : { uri: "https://img.freepik.com/vetores-premium/icone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg?semt=ais_hybrid&w=740&q=80" }
-                            }
-                        />
+                        <View style={styles.profilePicWrapper}>
+                            <Image
+                                style={styles.profilePic}
+                                source={userInfo?.img
+                                    ? { uri: userInfo.img }
+                                    : { uri: "https://img.freepik.com/vetores-premium/icone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg?semt=ais_hybrid&w=740&q=80" }
+                                }
+                            />
+                        </View>
                         <View style={styles.metaText}>
                             <Text style={styles.name}>{userInfo?.name || '-'}</Text>
                             <Text style={styles.username}>@{userInfo?.username || "Dumb"}</Text>
@@ -65,7 +67,7 @@ export default function ProfileScreen() {
                             <Text style={styles.buttonText}>
                                 Editar Perfil 
                             </Text>
-                            <FontAwesome style={{ marginLeft: 10}} name="edit" size={20} color="white" />
+                            <FontAwesome style={{marginTop: 2}} name="edit" size={20} color="white" />
                         </TouchableOpacity>
                     </View>
 
@@ -93,8 +95,6 @@ const styles = StyleSheet.create({
     imageBackground: {
         flex: 1,
         resizeMode: 'cover',
-        justifyContent: 'center',
-        alignItems: 'stretch',
     },
     overlayContent: {
         marginTop: 50,
@@ -107,13 +107,26 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
         backgroundColor: 'transparent'
     },
-    profilePic: {
+    profilePicWrapper: {
         width: 150,
         height: 150,
         borderRadius: 75,
-        borderWidth: 3,
-        borderColor: Colors.laranjaVariado,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        borderWidth: 4,
+        borderColor: 'white',
         marginBottom: 10,
+    },
+    profilePic: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 75,
     },
     metaText: {
         alignItems: 'center',
@@ -132,24 +145,24 @@ const styles = StyleSheet.create({
         marginTop: -10,
     },
     editarPerfil: {
-        backgroundColor: Colors.laranjaVariado,
+        backgroundColor: Colors.laranja,
         paddingVertical: 10,
         paddingHorizontal: 20,
-        borderRadius: 10,
+        borderRadius: 30,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        height: 40,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+        elevation: 8,
     },
     buttonText: {
-        display: 'flex',
-        textAlign: 'center',
-        justifyContent: 'center',
-        fontFamily: 'NunitoMedium',
-        gap: 20,
-        fontSize: 16,
-        color: Colors.creme,
-        marginRight: 0
+        fontFamily: 'NunitoBold',
+        fontSize: 18,
+        color: 'white',
+        marginRight: 10
     },
     sectionTitle: {
         fontFamily: 'NunitoExtraLight',

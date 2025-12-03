@@ -15,6 +15,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Header } from "@/components/header";
 import { AddButton } from "@/components/addButton"
 import { API_BASE_URL } from '@/constants/ApiConfig';
+import PopupModal from "@/components/PopupModal";
 
 export default function CreatePet() {
     const router = useRouter();
@@ -30,6 +31,8 @@ export default function CreatePet() {
     const [idadeTouched, setIdadeTouched] = useState(false);
     const [racaTouched, setRacaTouched] = useState(false);
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalInfo, setModalInfo] = useState({ title: '', message: '', type: 'error' as 'success' | 'error' });
     const params = useLocalSearchParams();
 
     useFocusEffect(
@@ -49,6 +52,8 @@ export default function CreatePet() {
             const petData: IPet = params.data ? JSON.parse(params.data as string) : null;
             
             if (!petData) {
+                setModalInfo({ title: 'Erro', message: 'Nenhum dado de pet encontrado.', type: 'error' });
+                setModalVisible(true);
                 return;
             }
 
@@ -80,6 +85,16 @@ export default function CreatePet() {
             <View style={styles.loadingContainer}>
                 <Text>Erro: Nenhum dado de pet encontrado.</Text>
                 <Button title="Voltar" onPress={() => router.back()} />
+                <PopupModal
+                    visible={modalVisible}
+                    title={modalInfo.title}
+                    message={modalInfo.message}
+                    onClose={() => {
+                        setModalVisible(false);
+                        router.back();
+                    }}
+                    type={modalInfo.type}
+                />
             </View>
         );
     }
@@ -87,7 +102,8 @@ export default function CreatePet() {
     const pickImage = async (index: number) => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar suas fotos!');
+            setModalInfo({ title: 'Permissão necessária', message: 'Precisamos de permissão para acessar suas fotos!', type: 'error' });
+            setModalVisible(true);
             return;
         }
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -114,10 +130,30 @@ export default function CreatePet() {
         setVacinas(prev => [...prev, novaVacina]);
     }
 
+    function removeVacina(id: string): void {
+        setVacinas(prev => prev.filter(vacina => vacina.id !== id));
+    }
+
+    const handleModalClose = () => {
+        setModalVisible(false);
+        if (modalInfo.type === 'success') {
+            router.push('/profile');
+        }
+    };
+
     async function handleSave(pet: IPet): Promise<void> {
-        const res: any = await editPet(pet);
-        if (res.success){
-            router.push('/profile')
+        try {
+            const res: any = await editPet(pet);
+            if (res.success){
+                setModalInfo({ title: 'Sucesso', message: 'Pet editado com sucesso!', type: 'success' });
+                setModalVisible(true);
+            } else {
+                setModalInfo({ title: 'Erro', message: res.message || 'Não foi possível editar o pet.', type: 'error' });
+                setModalVisible(true);
+            }
+        } catch (error) {
+            setModalInfo({ title: 'Erro', message: 'Ocorreu um erro ao salvar as alterações.', type: 'error' });
+            setModalVisible(true);
         }
     }
 
@@ -157,7 +193,7 @@ export default function CreatePet() {
             <ImageBackground source={image} style={styles.imageBackground}>
 
                 <Header
-                    title="Novo Pet"
+                    title="Editar Pet"
                     onBackPress={() => router.push('/profile')}
                 />
                 <ScrollView 
@@ -249,19 +285,24 @@ export default function CreatePet() {
                                 showsVerticalScrollIndicator={true}
                             >
                                 {vacinas.map((item, index) => (
-                                    <View key={item.id} style={{ marginBottom: 10 }}>
-                                        <CustomInput
-                                            onChangeText={(valor) => {
-                                                setVacinas(prev =>
-                                                    prev.map((vacina, i) =>
-                                                        i === index ? { ...vacina, nome: valor } : vacina
-                                                    )
-                                                );
-                                            }}
-                                            placeholder={`Nome da vacina ${index + 1}`}
-                                            iconName='needle'
-                                            value={item.nome}
-                                        />
+                                    <View key={item.id} style={styles.vaccineInputContainer}>
+                                        <View style={{flex: 1}}>
+                                            <CustomInput
+                                                onChangeText={(valor) => {
+                                                    setVacinas(prev =>
+                                                        prev.map((vacina, i) =>
+                                                            i === index ? { ...vacina, nome: valor } : vacina
+                                                        )
+                                                    );
+                                                }}
+                                                placeholder={`Nome da vacina ${index + 1}`}
+                                                iconName='needle'
+                                                value={item.nome}
+                                            />
+                                        </View>
+                                        <TouchableOpacity onPress={() => removeVacina(item.id)} style={styles.deleteButton}>
+                                            <Icon source="trash-can-outline" size={24} color={Colors.vermelho} />
+                                        </TouchableOpacity>
                                     </View>
                                 ))}
                                 {vacinas.length === 0 && (
@@ -300,7 +341,13 @@ export default function CreatePet() {
                         <View style={{ height: 40 }} />
                     </View>
                 </ScrollView> 
-
+                <PopupModal
+                    visible={modalVisible}
+                    title={modalInfo.title}
+                    message={modalInfo.message}
+                    onClose={handleModalClose}
+                    type={modalInfo.type}
+                />
             </ImageBackground>
         </KeyboardAvoidingView>
     );
@@ -408,6 +455,17 @@ const styles = StyleSheet.create({
         marginBottom: 15, 
         marginTop: 10,    
         textAlign: 'center',
+    },
+    vaccineInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+        gap: 5
+    },
+    deleteButton: {
+        padding: 8,
+        borderRadius: 20,
+        marginLeft: 8,
     },
     vaccineContainer: {
         marginBottom: 0,
