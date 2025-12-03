@@ -63,9 +63,6 @@ export default function EditProfileScreen() {
                     return;
                 }
                 const user = data.data.user!;
-
-
-                const user = userResponse.data.user;
                 setUserInfo(user);
                 setName(user.name || '');
                 setUsername(user.username || '');
