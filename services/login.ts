@@ -22,8 +22,7 @@ export default async function loginUser(user: UserLogin) {
     await saveBearerToken(response.data.access);
     return response.data.access;
   } catch (error: any) {
-    console.log(error.response)
-    console.error('Response data:', error.response?.data);
+
     throw error; // Re-throw para que o componente possa tratar
   }
 }

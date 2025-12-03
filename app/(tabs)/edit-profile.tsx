@@ -77,8 +77,9 @@ export default function EditProfileScreen() {
                     value: state.state_code,
                 }));
                 setStateList(formattedStates);
-                
-                const initialState = formattedStates.find(s => s.label === userStateName);
+
+
+                const initialState = formattedStates.find(s => s.value === userStateName);
 
                 if (initialState) {
                     setState(initialState.value);

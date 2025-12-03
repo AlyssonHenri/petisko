@@ -6,6 +6,7 @@ import loginUser from '@/services/login';
 import { router } from 'expo-router';
 import { SetStateAction, useEffect, useState, useMemo, useCallback } from 'react';
 import CustomInput from '@/components/generic_input';
+import ToastManager, { Toast } from 'toastify-react-native'
 
 
 export default function LoginScreen() {
@@ -21,10 +22,30 @@ export default function LoginScreen() {
 
     try {
       await loginUser({ "username": user, "password": password });
-      router.push('/profile');
+          Toast.show({
+            type: 'success',
+            text1: 'Sucesso',
+            text2: 'Login realizado com sucesso',
+            position: 'bottom',
+            visibilityTime: 2000,
+            autoHide: true,
+
+          })
+
+      setTimeout(()=> router.push('/profile'), 2200)
+
     } catch (err) {
-      console.error('Erro no login:', err);
-      setError('Falha no login. Verifique suas credenciais.');
+      //console.error('Erro no login:', err);
+
+                Toast.show({
+            type: 'error',
+            text1: 'Falha no login',
+            text2: 'Verifique suas credenciais.',
+            position: 'bottom',
+            visibilityTime: 5000,
+            autoHide: true,
+
+          })
     } finally {
       setLoading(false);
     }
@@ -86,6 +107,8 @@ export default function LoginScreen() {
         </View>
       </Pressable>
       </ScrollView>
+      <ToastManager />
+
     </KeyboardAvoidingView>
   );
 }
