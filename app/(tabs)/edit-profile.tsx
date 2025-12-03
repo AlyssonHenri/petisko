@@ -11,6 +11,7 @@ import getStates, { getCitiesFromState } from '@/controllers/states-controller';
 import { Icon } from 'react-native-paper';
 import { Header } from "@/components/header";
 import CustomInput from "@/components/generic_input";
+import PopupModal from "@/components/PopupModal";
 import {
     Image,
     ImageBackground,
@@ -40,6 +41,8 @@ export default function EditProfileScreen() {
     const [openCity, setOpenCity] = useState(false);
     const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
     const [cityList, setCityList] = useState<{ label: string; value: string }[]>([]);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalInfo, setModalInfo] = useState({ title: '', message: '', type: 'error' as 'success' | 'error' });
 
     useFocusEffect(useCallback(() => {
         setUserInfo(null);
@@ -55,11 +58,14 @@ export default function EditProfileScreen() {
                 
                 if (!data) {
                     setLoading(false);
+                    setModalInfo({ title: 'Erro', message: 'Não foi possível carregar os dados do perfil.', type: 'error' });
+                    setModalVisible(true);
                     return;
                 }
                 const user = data.data.user!;
 
 
+                const user = userResponse.data.user;
                 setUserInfo(user);
                 setName(user.name || '');
                 setUsername(user.username || '');
@@ -88,7 +94,8 @@ export default function EditProfileScreen() {
                 }
             } catch (error) {
                 console.error("Falha ao carregar dados:", error);
-                Alert.alert("Erro", "Não foi possível carregar os dados do perfil.");
+                setModalInfo({ title: 'Erro', message: 'Não foi possível carregar os dados do perfil.', type: 'error' });
+                setModalVisible(true);
             } finally {
                 setLoading(false);
             }
@@ -101,7 +108,8 @@ export default function EditProfileScreen() {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (status !== 'granted') {
-            Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar suas fotos!');
+            setModalInfo({ title: 'Permissão necessária', message: 'Precisamos de permissão para acessar suas fotos!', type: 'error' });
+            setModalVisible(true);
             return;
         }
 
@@ -142,13 +150,15 @@ export default function EditProfileScreen() {
             const imageChanged = profileImage !== (userInfo?.img || '');
 
             if (Object.keys(changes).length === 0 && !imageChanged) {
-                Alert.alert('Aviso', 'Nenhuma alteração foi feita.');
+                setModalInfo({ title: 'Aviso', message: 'Nenhuma alteração foi feita.', type: 'error' });
+                setModalVisible(true);
                 setSaving(false);
                 return;
             }
 
             if (!userInfo) {
-                Alert.alert('Erro', 'Informações do usuário não carregadas.');
+                setModalInfo({ title: 'Erro', message: 'Informações do usuário não carregadas.', type: 'error' });
+                setModalVisible(true);
                 return;
             }
 
@@ -159,16 +169,24 @@ export default function EditProfileScreen() {
             result = await updateUser(changes, undefined, imageType);
 
             if (result.success) {
-                Alert.alert('Sucesso', result.message, [
-                    { text: 'OK', onPress: () => router.push('/profile') }
-                ]);
+                setModalInfo({ title: 'Sucesso', message: result.message, type: 'success' });
+                setModalVisible(true);
             } else {
-                Alert.alert('Erro', result.message);
+                setModalInfo({ title: 'Erro', message: result.message, type: 'error' });
+                setModalVisible(true);
             }
         } catch (error) {
-            Alert.alert('Erro', 'Não foi possível salvar as alterações.');
+            setModalInfo({ title: 'Erro', message: 'Não foi possível salvar as alterações.', type: 'error' });
+            setModalVisible(true);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleModalClose = () => {
+        setModalVisible(false);
+        if (modalInfo.type === 'success') {
+            router.push('/profile');
         }
     };
 
@@ -299,6 +317,13 @@ export default function EditProfileScreen() {
                         <View style={{ height: 40 }} />
                     </View>
                 </ScrollView>
+                <PopupModal
+                    visible={modalVisible}
+                    title={modalInfo.title}
+                    message={modalInfo.message}
+                    onClose={handleModalClose}
+                    type={modalInfo.type}
+                />
             </ImageBackground>
         </KeyboardAvoidingView>
     );
