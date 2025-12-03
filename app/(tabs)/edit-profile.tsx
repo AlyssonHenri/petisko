@@ -54,13 +54,16 @@ export default function EditProfileScreen() {
 
         async function loadData() {
             try {
-                const userResponse = await getUser();
-                if (!userResponse || !userResponse.success || !userResponse.data.user) {
+                const data = await getUser();
+                
+                if (!data) {
                     setLoading(false);
                     setModalInfo({ title: 'Erro', message: 'Não foi possível carregar os dados do perfil.', type: 'error' });
                     setModalVisible(true);
                     return;
                 }
+                const user = data.data.user!;
+
 
                 const user = userResponse.data.user;
                 setUserInfo(user);

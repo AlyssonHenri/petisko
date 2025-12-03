@@ -61,7 +61,7 @@ export async function registerPet(id: number, pet: RootPet) {
     }
 }
 
-export async function deletePet(idPet: string){
+export async function deletePet(idPet: string) {
     const bearerToken = await AsyncStorage.getItem('bearer');
     let headers = {
         Authorization: "Bearer " + bearerToken,
@@ -73,20 +73,21 @@ export async function deletePet(idPet: string){
             headers: headers
         });
 
-    if (response.data) {
-        return { success: true }
-    } } catch (error: any) {
-            if (axios.isAxiosError(error)) {
-                console.log("Status:", error.response?.status);
-                console.log("Headers:", error.response?.headers);
-                console.log("Data:", error.response?.data);
-            } else {
-                console.log("Unexpected error:", error);
-            }
-            return { success: false, data: error.response?.data }
-        
-            throw error; // Re-throw para que o componente possa tratar
+        if (response.data) {
+            return { success: true }
         }
+    } catch (error: any) {
+        if (axios.isAxiosError(error)) {
+            console.log("Status:", error.response?.status);
+            console.log("Headers:", error.response?.headers);
+            console.log("Data:", error.response?.data);
+        } else {
+            console.log("Unexpected error:", error);
+        }
+        return { success: false, data: error.response?.data }
+
+        throw error; // Re-throw para que o componente possa tratar
+    }
 
 }
 
@@ -109,8 +110,9 @@ export async function editPet(pet: IPet) {
     formData.append("age", pet.age);
     formData.append("sexo", pet.sexo.toLocaleLowerCase());
     formData.append("raca", pet.raca);
-    console.log(pet.vacinas)
     formData.append("vacinas", JSON.stringify(pet.vacinas));
+
+
     const imagens = [pet.img1, pet.img2, pet.img3, pet.img4];
     imagens.forEach((img, index) => {
         if (img) {
@@ -121,6 +123,7 @@ export async function editPet(pet: IPet) {
             } as any);
         }
     });
+    console.log(formData)
 
     try {
         const response = await axios.patch(`${API_BASE_URL}/pets/${pet.id}/`, formData, {
