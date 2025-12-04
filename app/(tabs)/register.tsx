@@ -12,6 +12,8 @@ import MaskedInput from '@/components/masked_input';
 import * as ImagePicker from 'expo-image-picker';
 import { Header } from '@/components/header';
 import { Icon } from 'react-native-paper';
+import ToastManager, { Toast } from 'toastify-react-native'
+
 
 interface ValidationResult {
  isValid: boolean;
@@ -233,6 +235,13 @@ export default function RegisterScreen() {
 
   const isFormValid = useMemo(() => formPart1Valid && formPart2Valid, [formPart1Valid, formPart2Valid]);
 
+
+  const firstStepData = {user, cpf, userName, password, passwordCheck} 
+  const secondStepData = {state, city}
+  const isFirstStepFormFilled = Object.values(firstStepData).every(value => value.trim() !== '');
+  const isSecondStepFormFilled = Object.values(secondStepData).every(value => {if(value== null) return false; if (value.trim() !== '') return true;}); 
+
+
   const markPart1AsTouched = () => {
     setNameTouched(true);
     setCpfTouched(true);
@@ -248,6 +257,10 @@ export default function RegisterScreen() {
   };
 
   const handleContinuePress = () => {
+    console.log(formPart1Valid)
+    if(!formPart1Valid){
+      return 
+    }
     markPart1AsTouched();
     setParte(2);
   };
@@ -261,17 +274,30 @@ export default function RegisterScreen() {
      const response = await registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state ?? '', "city": city ?? '', "img": image ?? '' })
 
     if (response.success){
-      try {
+        Toast.show({
+            type: 'success',
+            text1: 'Cadastro realizado',
+            text2: 'Cadastro realizado com sucesso',
+            position: 'bottom',
+            visibilityTime: 2000,
+            autoHide: true,
+
+          })
         router.push('/');
-      } catch (err) {
-        console.log('Erro em redirecionar a página:', err);
-      }
+      
     }
-    else {
-      const firstKey = Object.keys(response.data)[0];
-      const firstMessage = response.data[firstKey][0];
-      setActualError(firstMessage)
-    }
+    const firstKey = Object.keys(response.data)[0];
+    const firstMessage = response.data[firstKey][0];
+
+    Toast.show({
+            type: 'error',
+            text1: 'Erro no cadastro',
+            text2: firstMessage,
+            position: 'bottom',
+            visibilityTime: 2000,
+            autoHide: true,
+
+          })
   };
 
  return (
@@ -405,10 +431,10 @@ export default function RegisterScreen() {
           <View style={styles.buttonContainer}>
             {parte === 1 ? (
               <TouchableOpacity
-                style={styles.registerButton}
+                style={[styles.registerButton, !isFirstStepFormFilled && styles.registerButtonDisabled]}
                 onPress={handleContinuePress}
               >
-                <Text style={styles.registerButtonText}>
+                <Text style={[styles.registerButtonText, !isFirstStepFormFilled && styles.registerButtonTextDisabled]}>
                   Continuar
                 </Text>
               </TouchableOpacity>
@@ -416,14 +442,14 @@ export default function RegisterScreen() {
               <TouchableOpacity
                 style={[
                   styles.registerButton,
-                  !isFormValid && styles.registerButtonDisabled
+                  !isFormValid && !isSecondStepFormFilled && styles.registerButtonDisabled
                 ]}
                 onPress={handleRegisterPress}
                 disabled={!isFormValid}
               >
                 <Text style={[
                   styles.registerButtonText,
-                  !isFormValid && styles.registerButtonTextDisabled
+                  !isFormValid && !isSecondStepFormFilled &&  styles.registerButtonTextDisabled
                 ]}>
                   Cadastrar
                 </Text>
@@ -432,6 +458,7 @@ export default function RegisterScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <ToastManager / >
     </Pressable>
  );
 }
