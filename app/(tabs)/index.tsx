@@ -37,7 +37,7 @@ export default function LoginScreen() {
     } catch (err) {
       //console.error('Erro no login:', err);
 
-                Toast.show({
+            Toast.show({
             type: 'error',
             text1: 'Falha no login',
             text2: 'Verifique suas credenciais.',
