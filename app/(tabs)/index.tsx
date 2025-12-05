@@ -3,10 +3,11 @@ import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import LoginInput from '@/components/custom-login-input';
 import loginUser from '@/services/login';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SetStateAction, useEffect, useState, useMemo, useCallback } from 'react';
 import CustomInput from '@/components/generic_input';
 import ToastManager, { Toast } from 'toastify-react-native'
+import { useNavbarStore } from './_layout';
 
 
 export default function LoginScreen() {
@@ -15,6 +16,8 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [passwordCheckTouched, setPasswordCheckTouched] = useState(false);
+
+  useFocusEffect(()=> useNavbarStore.getState().setActive(false))
 
   const handleLoginPress = async (user: string, password: string) => {
     setLoading(true);
@@ -31,7 +34,6 @@ export default function LoginScreen() {
             autoHide: true,
 
           })
-
       setTimeout(()=> router.push('/profile'), 2200)
 
     } catch (err) {
