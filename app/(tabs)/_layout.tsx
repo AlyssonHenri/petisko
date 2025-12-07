@@ -41,15 +41,6 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={Colors.laranja} />,
-          tabBarLabelStyle: { color: Colors.laranja },
-          headerRight: () => null,
-        }}
-      />
 
       <Tabs.Screen
         name="feed"
@@ -57,6 +48,17 @@ export default function TabLayout() {
           title: 'Feed',
           tabBarLabelStyle: { color: Colors.laranja },
           tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={Colors.laranja} />,
+          headerRight: () => null,
+        }}
+      />
+
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Perfil',
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={Colors.laranja} />,
+          tabBarLabelStyle: { color: Colors.laranja },
           headerRight: () => null,
         }}
       />
