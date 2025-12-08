@@ -27,7 +27,8 @@ export default {
   laranja: '#F27B50',
   laranjaVariado: '#EC9663',
   vermelho: '#FF5A5F',
-  preto: '#2C2A27'
+  preto: '#2C2A27',
+  pink: '#d34dd8ff'
 
 
 };
