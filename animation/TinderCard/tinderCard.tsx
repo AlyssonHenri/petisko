@@ -3,12 +3,14 @@ import React, { useCallback, useRef, useState } from 'react'
 import { getPets } from '@/services/pet';
 import { useFocusEffect } from 'expo-router';
 import getUser from '@/services/getUserInfo';
-import { ReceivedPet } from '@/interfaces/pet';
+import { IPet, ReceivedPet } from '@/interfaces/pet';
 import Colors from '@/constants/Colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CardView from './CardView';
 import { Easing, useSharedValue, withDecay, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { getBlocks, getMatches, sendMatch, sendUnmatch } from '@/services/matches';
+import SelectionPet from './selectionPet';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -17,11 +19,32 @@ const RESET_DURATION = 300;
 
 export default function index() {
 
-  async function getPetsForFeed() {
+  async function getPetsForFeed(petId: string) {
     const petList = await getPets();
+    const matchesObj = await getMatches(petId);
+    const blocksObj = await getBlocks(petId);
+    console.log(blocksObj?.data)
+
+    const matches = Array.isArray(matchesObj?.data) ? matchesObj.data : []
+    const blocks = Array.isArray(blocksObj?.data) ? blocksObj.data : []
+
+    //console.log(matches)
+
+
     const res = await getUser();
     const user = res?.data?.user;
-    const filteredPetList = petList?.data?.filter((pet) => pet.tutor !== user?.id)
+    const filteredPetList = petList?.data?.filter((pet) => pet.tutor !== user?.id && !matches.some(
+      (petM: { 'id': string, petMatch: string, petPrincipal: string }) =>
+        petM.petPrincipal === pet.id ||
+        petM.petMatch === pet.id
+    ) && !blocks.some(
+      (petM: { 'id': string, petBlock: string, petPrincipal: string }) =>
+        petM.petPrincipal === pet.id ||
+        petM.petBlock === pet.id
+    ))
+
+
+
     setCards(filteredPetList ?? [])
     setFeedLoaded(true)
 
@@ -29,15 +52,38 @@ export default function index() {
 
   useFocusEffect(
     useCallback(() => {
-      getPetsForFeed()
+      async function fetchPetsFromUser() {
+        const res = await getUser();
+        if (res) {
+          const petsList = res.data.petList ?? [];
+          if (petsList?.length > 0) {
+            setPetPrincipalId(petsList[0].id)
+            await getPetsForFeed(petsList[0].id)
+
+          }
+
+        }
+      }
+      fetchPetsFromUser();
       resetPosition()
     }, [])
   )
 
 
+  async function changeFullId(index: string) {
+
+    setPetPrincipalId(index);
+    getPetsForFeed(index);
+  }
+
 
   const [cards, setCards] = useState<ReceivedPet[]>([]);
   const cardsRef = useRef<ReceivedPet[]>([]);
+
+  const [petPrincipalId, setPetPrincipalId] = useState('')
+  const petPrincipalIdRef = useRef(petPrincipalId);
+
+
 
   const [feedLoaded, setFeedLoaded] = useState(false)
   const translateX = useSharedValue(0)
@@ -46,8 +92,9 @@ export default function index() {
   const nextCardScale = useSharedValue(0.9)
 
   React.useEffect(() => {
+    petPrincipalIdRef.current = petPrincipalId;
     cardsRef.current = cards;
-  }, [cards]);
+  }, [petPrincipalId, cards]);
 
 
 
@@ -59,11 +106,21 @@ export default function index() {
 
   }, [])
 
-  const onSwipeComplete = useCallback((direction: 'right' | 'left' | 'up' | 'down') => {
+  const onSwipeComplete = async (direction: 'right' | 'left' | 'up' | 'down') => {
     const action = direction === 'right' || direction === 'up' ? 'LIKED' : 'DISLIKED';
+    const currentPetId = petPrincipalIdRef.current;
 
     if (cardsRef.current.length > 0 && cardsRef.current[0]) {
-      console.log('action', action, cardsRef.current[0].name)
+      if (action === 'LIKED') {
+        console.log(currentPetId)
+        sendMatch(currentPetId, cardsRef.current[0].id)
+          .then(() => console.log('Match enviado com sucesso'))
+          .catch(err => console.error('Erro ao enviar match:', err));
+      } else {
+        sendUnmatch(currentPetId, cardsRef.current[0].id)
+          .then(() => console.log('Unmatch enviado com sucesso'))
+          .catch(err => console.error('Erro ao enviar match:', err));
+      }
 
       setCards(pre => pre.slice(1));
       translateX.value = 0
@@ -76,14 +133,14 @@ export default function index() {
     } else {
       resetPosition()
     }
-  }, [cards, resetPosition])
+  }
 
   const forceSwipe = useCallback((direction: 'right' | 'left' | 'up' | 'down') => {
     const swipeConfig = {
       right: { x: SCREEN_WIDTH * 1.5, y: 0 },
       left: { x: -SCREEN_WIDTH * 1.5, y: 0 },
-      up: { y: -SCREEN_WIDTH * 1.5, x: 0 },
-      down: { y: SCREEN_WIDTH * 1.5, x: 0 },
+      up: { y: -SCREEN_HEIGHT * 1.5, x: 0 },
+      down: { y: SCREEN_HEIGHT * 1.5, x: 0 },
     }
 
     translateX.value = withTiming(swipeConfig[direction].x,
@@ -147,7 +204,7 @@ export default function index() {
         index={index}
         totalCards={cards.length}
         panHandlers={index === 0 ? panResponder.panHandlers : {}}
-        nextCardScale={index === 0 ? nextCardScale : dummyTranslate}
+        nextCardScale={index === 1 ? nextCardScale : dummyTranslate}
         translateX={index === 0 ? translateX : dummyTranslate}
         translateY={index === 0 ? translateY : dummyTranslate}
       />
@@ -156,6 +213,8 @@ export default function index() {
 
   return (
     <View style={styles.container}>
+      <SelectionPet onIndexChange={changeFullId} />
+
       {cards.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>Sem mais pets</Text>
@@ -165,17 +224,21 @@ export default function index() {
           {cards.map(renderCard).reverse()}
           <View style={styles.buttonContainer}>
             <TouchableOpacity onPress={handleDislike} style={styles.btn} >
-              <Ionicons name="close" size={40} color="black" />
+              <Ionicons name="close" size={45} color={Colors.laranja} />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleLike} style={styles.btn} >
-              <Ionicons name="heart-outline" size={40} color="black" />
+              <Ionicons name="heart-outline" size={45} color={Colors.laranja} />
             </TouchableOpacity>
 
           </View>
+
         </>
-      )}
-    </View>
+      )
+      }
+
+
+    </View >
   )
 }
 
@@ -189,7 +252,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     position: 'absolute',
-    top: 700,
+    top: 680,
     width: '100%',
     justifyContent: 'space-evenly',
     flexDirection: 'row'
