@@ -17,57 +17,57 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   const [passwordCheckTouched, setPasswordCheckTouched] = useState(false);
 
-  useFocusEffect(()=> useNavbarStore.getState().setActive(false))
+  useFocusEffect(() => useNavbarStore.getState().setActive(false))
 
   const handleLoginPress = async (user: string, password: string) => {
     setLoading(true);
     setError('');
 
-    try {
-      await loginUser({ "username": user, "password": password });
-          Toast.show({
-            type: 'success',
-            text1: 'Sucesso',
-            text2: 'Login realizado com sucesso',
-            position: 'bottom',
-            visibilityTime: 2000,
-            autoHide: true,
+    const res = await loginUser({ "username": user, "password": password });
 
-          })
-      setTimeout(()=> router.push('/profile'), 2200)
+    if (res.success === true) {
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso',
+        text2: 'Login realizado com sucesso',
+        position: 'bottom',
+        visibilityTime: 1800,
+        autoHide: true,
 
-    } catch (err) {
-      //console.error('Erro no login:', err);
+      })
+      setTimeout(() => router.push('/profile'), 2000)
 
-            Toast.show({
-            type: 'error',
-            text1: 'Falha no login',
-            text2: 'Verifique suas credenciais.',
-            position: 'bottom',
-            visibilityTime: 5000,
-            autoHide: true,
 
-          })
-    } finally {
+
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'Falha no login',
+        text2: res.data,
+        position: 'bottom',
+        visibilityTime: 5000,
+        autoHide: true,
+
+      })
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView style={{flex: 1}}>
-      <ScrollView style={{backgroundColor: Colors.creme}}>
-      <Pressable onPress={() => Keyboard.dismiss()} style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <View>
-              <Text style={[styles.titleLogo, styles.title]}>
-                pet<Text style={[styles.titleLogoMini, styles.title]}>isko</Text>
-              </Text>
+    <KeyboardAvoidingView style={{ flex: 1 }}>
+      <ScrollView style={{ backgroundColor: Colors.creme }}>
+        <Pressable onPress={() => Keyboard.dismiss()} style={{ flex: 1 }}>
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <View>
+                <Text style={[styles.titleLogo, styles.title]}>
+                  pet<Text style={[styles.titleLogoMini, styles.title]}>isko</Text>
+                </Text>
+              </View>
+              <Image source={require('../../assets/logo/logo.png')} />
             </View>
-            <Image source={require('../../assets/logo/logo.png')} />
-          </View>
-          <View style={styles.content}>
-            <View style={styles.fieldsContainer}>
+            <View style={styles.content}>
+              <View style={styles.fieldsContainer}>
                 <CustomInput
                   onChangeText={(dado: SetStateAction<string>) => setUsername(dado)}
                   onFocus={() => setPasswordCheckTouched(true)}
@@ -79,35 +79,35 @@ export default function LoginScreen() {
                 <CustomInput
                   onChangeText={(dado: SetStateAction<string>) => setPassword(dado)}
                   onFocus={() => setPasswordCheckTouched(true)}
-                  isPassword={true} 
+                  isPassword={true}
                   placeholder='Digite sua senha'
                   //errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
                   iconName='lock-check'
                   value={password}
                 />
+              </View>
+
+              {/* {error ? <Text style={styles.errorText}>{error}</Text> : null} */}
+
+              <TouchableOpacity onPress={() => router.push('/register')}>
+                <Text style={styles.registerText}>Cadastre-se</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleLoginPress(user, password)}
+                style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={Colors.creme} size={'large'} />
+                ) : (
+                  <Text style={styles.loginButtonText}>Login</Text>
+                )}
+              </TouchableOpacity>
+
             </View>
-
-            {/* {error ? <Text style={styles.errorText}>{error}</Text> : null} */}
-
-            <TouchableOpacity onPress={() => router.push('/register')}>
-              <Text style={styles.registerText}>Cadastre-se</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handleLoginPress(user, password)}
-              style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color={Colors.creme} size={'large'}/>
-              ) : (
-                <Text style={styles.loginButtonText}>Login</Text>
-              )}
-            </TouchableOpacity>
-
           </View>
-        </View>
-      </Pressable>
+        </Pressable>
       </ScrollView>
       <ToastManager />
 
