@@ -23,7 +23,7 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const isNavbarActive = useNavbarStore((state: any) => state.isActive);
-  
+
   return (
     <Tabs
       screenOptions={{
@@ -83,7 +83,7 @@ export default function TabLayout() {
           headerRight: () => null,
         }}
       />
-      
+
       <Tabs.Screen
         name='register'
         options={{
@@ -103,7 +103,7 @@ export default function TabLayout() {
           headerRight: () => null,
         }}
       />
-      
+
       <Tabs.Screen
         name='createPet'
         options={{
@@ -113,7 +113,7 @@ export default function TabLayout() {
           headerRight: () => null,
         }}
       />
-      
+
       <Tabs.Screen
         name='edit-pet'
         options={{

@@ -8,10 +8,11 @@ interface PopupModalProps {
   title: string;
   message: string;
   onClose: () => void;
-  type: 'success' | 'error';
+  onConfirm?: () => void;
+  type: 'success' | 'error' | 'conf';
 }
 
-const PopupModal: React.FC<PopupModalProps> = ({ visible, title, message, onClose, type }) => {
+const PopupModal: React.FC<PopupModalProps> = ({ visible, title, message, onClose, onConfirm, type }) => {
   const isSuccess = type === 'success';
   const iconName = isSuccess ? 'check-circle-outline' : 'alert-circle-outline';
   const iconColor = isSuccess ? Colors.verde : Colors.vermelho;
@@ -29,15 +30,31 @@ const PopupModal: React.FC<PopupModalProps> = ({ visible, title, message, onClos
           <Icon source={iconName} size={50} color={iconColor} />
           <Text style={styles.modalTitle}>{title}</Text>
           <Text style={styles.modalText}>{message}</Text>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: buttonColor }]}
-            onPress={onClose}
-          >
-            <Text style={styles.textStyle}>Fechar</Text>
-          </TouchableOpacity>
+
+          {type !== 'conf' &&
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: buttonColor }]}
+              onPress={onClose}
+            ><Text style={styles.textStyle}>Fechar</Text></TouchableOpacity>}
+          {type === 'conf' && onConfirm &&
+
+            <View style={{ flexDirection: 'row', gap: 20, alignItems: 'flex-start' }}>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: buttonColor }]}
+                onPress={onConfirm}
+              ><Text style={styles.textStyle}>Sim</Text></TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: buttonColor }]}
+                onPress={onClose}
+              ><Text style={styles.textStyle}>Não</Text></TouchableOpacity>
+            </View>
+          }
+
+
         </View>
       </View>
-    </Modal>
+    </Modal >
   );
 };
 
