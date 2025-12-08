@@ -1,63 +1,138 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
+import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet } from 'react-native'
 import React, { useState } from 'react'
 import { IPet } from '@/interfaces/pet';
 import getUser from '@/services/getUserInfo';
 import { useFocusEffect } from 'expo-router';
 import { API_BASE_URL } from '@/constants/ApiConfig';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Colors from '@/constants/Colors';
-
-
-
-
-
-
 
 export default function SelectionPet({ onIndexChange }: { onIndexChange?: (index: string) => void }) {
     const [petList, setPetList] = useState<IPet[]>([]);
     const [currentIndex, setCurrentIndex] = useState<number>(0);
 
-
-    const handleIndex = (() => {
-        setCurrentIndex((prev) => {
-            const next = prev + 1 >= petList.length ? 0 : prev + 1;
-            onIndexChange?.(petList[next].id)
-            return next
-        }
-        )
-
-
-    })
+    const handleSelectPet = (index: number) => {
+        setCurrentIndex(index);
+        onIndexChange?.(petList[index].id);
+    }
 
     useFocusEffect(React.useCallback(() => {
         async function fetchPetsFromUser() {
             const res = await getUser();
             const petsList = res?.data?.petList;
-            setPetList(petsList!)
+            setPetList(petsList!);
         }
         fetchPetsFromUser();
     }, []));
 
-
     return (
-        (<View style={{ position: 'absolute', top: 30, width: '90%', height: 85, backgroundColor: Colors.laranjaVariado, alignItems: 'flex-start', borderRadius: 100 }}>
-            {petList.length > 0 &&
-
-                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20, padding: 10, marginLeft: -10 }}>
-                    <Image style={{ height: 80, width: 80, borderRadius: 100 }} source={{ uri: `${API_BASE_URL}/${petList[currentIndex].img1}` }}></Image>
-                    <View>
-                        <Text style={{ fontFamily: 'NunitoLight', color: 'white' }}>Procurando love para...</Text>
-                        <Text style={{ fontFamily: 'NunitoBold', color: 'white', fontSize: 15 }}>{petList[currentIndex].name}</Text>
-                    </View>
-                    <TouchableOpacity onPress={handleIndex}>
-                        <FontAwesome style={{ marginTop: 2 }} name="chevron-circle-right" size={50} color="white" />
-
+        <View style={styles.container}>
+            <Text style={styles.title}>Procurando love para:</Text>
+            <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
+                {petList.map((pet, index) => (
+                    <TouchableOpacity
+                        key={pet.id}
+                        onPress={() => handleSelectPet(index)}
+                        style={[
+                            styles.petItem,
+                            currentIndex === index && styles.petItemSelected
+                        ]}
+                    >
+                        <Image
+                            style={[
+                                styles.petImage,
+                                currentIndex === index && styles.petImageSelected
+                            ]}
+                            source={{ uri: `${API_BASE_URL}/${pet.img1}` }}
+                        />
+                        <Text style={[
+                            styles.petName,
+                            currentIndex === index && styles.petNameSelected
+                        ]}>
+                            {pet.name}
+                        </Text>
+                        {currentIndex === index && (
+                            <View style={styles.indicator} />
+                        )}
                     </TouchableOpacity>
-                </View>
-            }
-
-        </View>)
-
+                ))}
+            </ScrollView>
+        </View>
     )
 }
+
+const styles = StyleSheet.create({
+    container: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'white',
+        paddingTop: 50,
+        paddingBottom: 10,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
+        zIndex: 10,
+    },
+    title: {
+        fontSize: 12,
+        fontFamily: 'NunitoMedium',
+        color: '#666',
+        paddingHorizontal: 20,
+        marginBottom: 5,
+    },
+    scrollContent: {
+        paddingHorizontal: 15,
+        gap: 15,
+        alignItems: 'center',
+    },
+    petItem: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 5,
+        borderRadius: 15,
+        backgroundColor: 'transparent',
+    },
+    petItemSelected: {
+        backgroundColor: Colors.laranjaVariado + '20',
+    },
+    petImage: {
+        height: 55,
+        width: 55,
+        borderRadius: 27.5,
+        borderWidth: 2,
+        borderColor: '#ddd',
+    },
+    petImageSelected: {
+        borderWidth: 3,
+        borderColor: Colors.laranja,
+    },
+    petName: {
+        fontFamily: 'NunitoMedium',
+        fontSize: 12,
+        color: '#666',
+        marginTop: 4,
+    },
+    petNameSelected: {
+        fontFamily: 'NunitoBold',
+        color: Colors.laranja,
+    },
+    indicator: {
+        position: 'absolute',
+        bottom: -2,
+        width: 30,
+        height: 3,
+        backgroundColor: Colors.laranja,
+        borderRadius: 2,
+    },
+});
 

@@ -17,7 +17,7 @@ function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={26} style={{ marginBottom: 0 }} {...props} />;
 }
 
 export default function TabLayout() {
@@ -27,8 +27,20 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        tabBarStyle: isNavbarActive ? {} : { display: 'none' },
+        tabBarActiveTintColor: Colors.laranja,
+        tabBarInactiveTintColor: '#999',
+        tabBarStyle: isNavbarActive ? {
+          backgroundColor: 'white',
+          borderTopWidth: 0,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          height: 90,
+          paddingBottom: 10,
+          paddingTop: 10,
+        } : { display: 'none' },
         headerShown: false,
       }}>
       <Tabs.Screen
@@ -52,6 +64,15 @@ export default function TabLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="matches"
+        options={{
+          title: 'Matches',
+          tabBarLabelStyle: { color: Colors.laranja },
+          tabBarIcon: ({ color }) => <TabBarIcon name="heart-o" color={Colors.laranja} />,
+          headerRight: () => null,
+        }}
+      />
 
       <Tabs.Screen
         name="profile"
