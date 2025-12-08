@@ -3,10 +3,11 @@ import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import LoginInput from '@/components/custom-login-input';
 import loginUser from '@/services/login';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SetStateAction, useEffect, useState, useMemo, useCallback } from 'react';
 import CustomInput from '@/components/generic_input';
 import ToastManager, { Toast } from 'toastify-react-native'
+import { useNavbarStore } from './_layout';
 
 
 export default function LoginScreen() {
@@ -16,56 +17,57 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   const [passwordCheckTouched, setPasswordCheckTouched] = useState(false);
 
+  useFocusEffect(() => useNavbarStore.getState().setActive(false))
+
   const handleLoginPress = async (user: string, password: string) => {
     setLoading(true);
     setError('');
 
-    try {
-      await loginUser({ "username": user, "password": password });
-          Toast.show({
-            type: 'success',
-            text1: 'Sucesso',
-            text2: 'Login realizado com sucesso',
-            position: 'bottom',
-            visibilityTime: 2000,
-            autoHide: true,
+    const res = await loginUser({ "username": user, "password": password });
 
-          })
+    if (res.success === true) {
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso',
+        text2: 'Login realizado com sucesso',
+        position: 'bottom',
+        visibilityTime: 1800,
+        autoHide: true,
 
-      setTimeout(()=> router.push('/profile'), 2200)
+      })
+      setTimeout(() => router.push('/profile'), 2000)
 
-    } catch (err) {
-      //console.error('Erro no login:', err);
 
-            Toast.show({
-            type: 'error',
-            text1: 'Falha no login',
-            text2: 'Verifique suas credenciais.',
-            position: 'bottom',
-            visibilityTime: 5000,
-            autoHide: true,
 
-          })
-    } finally {
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'Falha no login',
+        text2: res.data,
+        position: 'bottom',
+        visibilityTime: 5000,
+        autoHide: true,
+
+      })
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView style={{flex: 1}}>
-      <ScrollView style={{backgroundColor: Colors.creme}}>
-      <Pressable onPress={() => Keyboard.dismiss()} style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <View>
-              <Text style={[styles.titleLogo, styles.title]}>
-                pet<Text style={[styles.titleLogoMini, styles.title]}>isko</Text>
-              </Text>
+    <KeyboardAvoidingView style={{ flex: 1 }}>
+      <ScrollView style={{ backgroundColor: Colors.creme }}>
+        <Pressable onPress={() => Keyboard.dismiss()} style={{ flex: 1 }}>
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <View>
+                <Text style={[styles.titleLogo, styles.title]}>
+                  pet<Text style={[styles.titleLogoMini, styles.title]}>isko</Text>
+                </Text>
+              </View>
+              <Image source={require('../../assets/logo/logo.png')} />
             </View>
-            <Image source={require('../../assets/logo/logo.png')} />
-          </View>
-          <View style={styles.content}>
-            <View style={styles.fieldsContainer}>
+            <View style={styles.content}>
+              <View style={styles.fieldsContainer}>
                 <CustomInput
                   onChangeText={(dado: SetStateAction<string>) => setUsername(dado)}
                   onFocus={() => setPasswordCheckTouched(true)}
@@ -77,35 +79,35 @@ export default function LoginScreen() {
                 <CustomInput
                   onChangeText={(dado: SetStateAction<string>) => setPassword(dado)}
                   onFocus={() => setPasswordCheckTouched(true)}
-                  isPassword={true} 
+                  isPassword={true}
                   placeholder='Digite sua senha'
                   //errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
                   iconName='lock-check'
                   value={password}
                 />
+              </View>
+
+              {/* {error ? <Text style={styles.errorText}>{error}</Text> : null} */}
+
+              <TouchableOpacity onPress={() => router.push('/register')}>
+                <Text style={styles.registerText}>Cadastre-se</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleLoginPress(user, password)}
+                style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={Colors.creme} size={'large'} />
+                ) : (
+                  <Text style={styles.loginButtonText}>Login</Text>
+                )}
+              </TouchableOpacity>
+
             </View>
-
-            {/* {error ? <Text style={styles.errorText}>{error}</Text> : null} */}
-
-            <TouchableOpacity onPress={() => router.push('/register')}>
-              <Text style={styles.registerText}>Cadastre-se</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handleLoginPress(user, password)}
-              style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color={Colors.creme} size={'large'}/>
-              ) : (
-                <Text style={styles.loginButtonText}>Login</Text>
-              )}
-            </TouchableOpacity>
-
           </View>
-        </View>
-      </Pressable>
+        </Pressable>
       </ScrollView>
       <ToastManager />
 

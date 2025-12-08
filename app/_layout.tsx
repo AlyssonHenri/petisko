@@ -33,6 +33,7 @@ export default function RootLayout() {
     PoppinsExtraLight: require('../assets/fonts/Poppins/Poppins-ExtraLight.ttf'),
     NunitoBlack: require('../assets/fonts/Nunito/Nunito-Black.ttf'),
     NunitoExtraLight: require('../assets/fonts/Nunito/Nunito-ExtraLight.ttf'),
+    NunitoLight: require('../assets/fonts/Nunito/Nunito-Light.ttf'),
     NunitoBold: require('../assets/fonts/Nunito/Nunito-Bold.ttf'),
     NunitoMedium: require('../assets/fonts/Nunito/Nunito-Medium.ttf'),
     NunitoRegular: require('../assets/fonts/Nunito/Nunito-Regular.ttf'),
@@ -53,13 +54,13 @@ export default function RootLayout() {
 
   if (!loaded || showSplash) {
     return (
-      <CustomSplashScreen 
+      <CustomSplashScreen
         onFinish={() => {
           console.log('Splash screen finished, loaded:', loaded);
           setTimeout(() => {
             setShowSplash(false);
           }, 100);
-        }} 
+        }}
       />
     );
   }
@@ -72,9 +73,9 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
     </ThemeProvider>
   );
 }

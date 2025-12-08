@@ -1,9 +1,17 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
+import { create } from 'zustand';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { isNavbarActive } from '@/controllers/navbar-controller';
+
+export const useNavbarStore = create<{
+  isActive: boolean;
+  setActive: (active: boolean) => void;
+}>((set: any) => ({
+  isActive: false,
+  setActive: (active: any) => set({ isActive: active }),
+}));
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
@@ -14,6 +22,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const isNavbarActive = useNavbarStore((state: any) => state.isActive);
   
   return (
     <Tabs
@@ -26,27 +35,71 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            null
-          ),
+          href: null,
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={'white'} />,
+          headerRight: () => null,
         }}
       />
+
+
+      <Tabs.Screen
+        name="feed"
+        options={{
+          title: 'Feed',
+          tabBarLabelStyle: { color: Colors.laranja },
+          tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={Colors.laranja} />,
+          headerRight: () => null,
+        }}
+      />
+
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Perfil',
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={Colors.laranja} />,
+          tabBarLabelStyle: { color: Colors.laranja },
+          headerRight: () => null,
+        }}
+      />
+      
       <Tabs.Screen
         name='register'
         options={{
           title: 'Tab Tree',
+          href: null,
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            null
-          )
+          headerRight: () => null,
         }}
       />
+
       <Tabs.Screen
-        name="two"
+        name='edit-profile'
         options={{
-          title: 'Tab Two',
+          title: 'Tab Edit',
+          href: null,
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerRight: () => null,
+        }}
+      />
+      
+      <Tabs.Screen
+        name='createPet'
+        options={{
+          title: 'Tab Create',
+          href: null,
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerRight: () => null,
+        }}
+      />
+      
+      <Tabs.Screen
+        name='edit-pet'
+        options={{
+          title: 'edit-pet',
+          href: null,
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerRight: () => null,
         }}
       />
     </Tabs>

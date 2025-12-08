@@ -20,10 +20,9 @@ export default async function loginUser(user: UserLogin) {
     });
 
     await saveBearerToken(response.data.access);
-    return response.data.access;
+    return { success: true, data: response.data.access };
   } catch (error: any) {
-
-    throw error; // Re-throw para que o componente possa tratar
+    return { success: false, data: error.response?.data }; // Re-throw para que o componente possa tratar
   }
 }
 

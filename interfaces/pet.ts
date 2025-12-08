@@ -12,6 +12,13 @@ export interface IPet {
 }
 export type RootPet = Omit<IPet, 'id'>
 
+
+export interface ReceivedPet extends IPet {
+    tutor: number
+}
+
+
+
 export interface Vacina {
     id: string
     nome: string,
