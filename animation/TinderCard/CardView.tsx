@@ -3,6 +3,7 @@ import React, { FC, useEffect } from 'react'
 import { ReceivedPet } from '@/interfaces/pet'
 import Animated, { Easing, Extrapolation, interpolate, SharedValue, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 import Colors from '@/constants/Colors'
+import FontAwesome from '@expo/vector-icons/FontAwesome'
 
 export interface CardViewProps {
     card: ReceivedPet,
@@ -17,6 +18,8 @@ export interface CardViewProps {
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
 const ROTATION_RANGE = 15
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
+
 
 
 
@@ -64,6 +67,44 @@ const CardView: FC<CardViewProps> = ({
 
     }, [index, isTopCard, isSecondCard])
 
+
+    const backgroundColorStyle = useAnimatedStyle(() => {
+        let bgColor = 'white';
+
+        if (isTopCard) {
+            if (translateX.value > 0) {
+                const progress = Math.min(translateX.value / SWIPE_THRESHOLD, 1);
+                bgColor = `rgba(221, 66, 87, ${progress * 0.5})`; // vermeio
+            } else if (translateX.value < 0) {
+                const progress = Math.min(-translateX.value / SWIPE_THRESHOLD, 1);
+                bgColor = `rgba(255, 255, 255, ${progress * 0.5})`; // preto
+            }
+        }
+
+        return { backgroundColor: bgColor };
+    });
+
+    const heartStyle = useAnimatedStyle(() => {
+        if (!isTopCard) return { opacity: 0 };
+
+        const progress = Math.min(Math.max(translateX.value / SWIPE_THRESHOLD, 0), 1);
+        return {
+            opacity: progress,
+            transform: [{ scale: 0.5 + 0.5 * progress }],
+        };
+    });
+
+    const closeStyle = useAnimatedStyle(() => {
+        if (!isTopCard) return { opacity: 0 };
+
+        const progress = Math.min(Math.max(-translateX.value / SWIPE_THRESHOLD, 0), 1);
+        return {
+            opacity: progress,
+            transform: [{ scale: 0.5 + 0.5 * progress }],
+        };
+    });
+
+
     const animationStyle = useAnimatedStyle(() => {
         const currentX = isTopCard ? translateX.value : 0;
         const currentY = isTopCard ? translateY.value : 0;
@@ -92,11 +133,18 @@ const CardView: FC<CardViewProps> = ({
     })
 
     return (
-        <Animated.View style={[styles.card, animationStyle]} {...panHandlers}>
+        <Animated.View style={[styles.card, animationStyle, backgroundColorStyle]} {...panHandlers}>
             <View style={styles.cardImage}>
                 <Image style={{ height: '100%', width: '100%', resizeMode: 'cover' }} source={{ uri: card.img1 }} />
 
             </View>
+            <Animated.View style={[StyleSheet.absoluteFill, { justifyContent: 'center', alignItems: 'center' }, heartStyle]}>
+                <FontAwesome name="heart" size={120} color="white" />
+            </Animated.View>
+
+            <Animated.View style={[StyleSheet.absoluteFill, { justifyContent: 'center', alignItems: 'center' }, closeStyle]}>
+                <FontAwesome name="close" size={120} color="white" />
+            </Animated.View>
             <View style={styles.cardFooter}>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: -10 }}>
                     <Text style={styles.name}>{card.name}, {card.age} | </Text>
