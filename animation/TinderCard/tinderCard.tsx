@@ -18,6 +18,12 @@ const SWIPE_OUT_DURATION = 250;
 const RESET_DURATION = 300;
 
 export default function index() {
+  const [cards, setCards] = useState<ReceivedPet[]>([]);
+  const cardsRef = useRef<ReceivedPet[]>([]);
+
+  const [petPrincipalId, setPetPrincipalId] = useState('')
+  const petPrincipalIdRef = useRef(petPrincipalId);
+  const initialized = useRef(false);
 
   async function getPetsForFeed(petId: string) {
     const petList = await getPets();
@@ -57,11 +63,17 @@ export default function index() {
         if (res) {
           const petsList = res.data.petList ?? [];
           if (petsList?.length > 0) {
-            setPetPrincipalId(petsList[0].id)
-            await getPetsForFeed(petsList[0].id)
+            if (!initialized.current) {
 
+              setPetPrincipalId(petsList[0].id)
+              petPrincipalIdRef.current = petsList[0].id
+              await getPetsForFeed(petsList[0].id)
+              initialized.current = true
+            } else if (petPrincipalIdRef.current) {
+              
+              await getPetsForFeed(petPrincipalIdRef.current)
+            }
           }
-
         }
       }
       fetchPetsFromUser();
@@ -71,17 +83,10 @@ export default function index() {
 
 
   async function changeFullId(index: string) {
-
     setPetPrincipalId(index);
+    petPrincipalIdRef.current = index;
     getPetsForFeed(index);
   }
-
-
-  const [cards, setCards] = useState<ReceivedPet[]>([]);
-  const cardsRef = useRef<ReceivedPet[]>([]);
-
-  const [petPrincipalId, setPetPrincipalId] = useState('')
-  const petPrincipalIdRef = useRef(petPrincipalId);
 
 
 
@@ -221,7 +226,9 @@ export default function index() {
         </View>
       ) : (
         <>
-          {cards.map(renderCard).reverse()}
+          <View style={styles.cardsWrapper}>
+            {cards.map(renderCard).reverse()}
+          </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity onPress={handleDislike} style={styles.btn} >
               <Ionicons name="close" size={45} color={Colors.laranja} />
@@ -249,26 +256,34 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.creme,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: 120,
+    paddingBottom: 40,
+  },
+  cardsWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonContainer: {
     position: 'absolute',
-    top: 680,
+    bottom: 10,
     width: '100%',
     justifyContent: 'space-evenly',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    zIndex: 10,
   },
   btn: {
     backgroundColor: '#fff',
-    height: 60,
-    width: 60,
+    height: 70,
+    width: 70,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 60,
+    borderRadius: 35,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 8.3,
-    shadowRadius: 6,
-    elevation: 2
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8
   },
   emptyContainer: {
     flex: 1,
