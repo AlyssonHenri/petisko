@@ -19,7 +19,7 @@ export default function MatchesScreen() {
     const [matches, setMatches] = useState<IMatchWithPetDetails[]>([])
     const [blockedPets, setBlockedPets] = useState<IBlockedPetWithDetails[]>([])
     const [activeTab, setActiveTab] = useState<'matches' | 'blocked'>('matches')
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [isModalVisible, setModalVisible] = useState(false)
     const [itemToDelete, setItemToDelete] = useState<number | null>(null)
     const initialized = useRef(false)
@@ -29,7 +29,7 @@ export default function MatchesScreen() {
         const res = await getUser()
         const petsList = res?.data?.petList
         setPetList(petsList!)
-        
+
         if (petsList && petsList.length > 0 && !initialized.current) {
             const firstPet = petsList[0]
             setSelectedPet(firstPet)
@@ -46,7 +46,7 @@ export default function MatchesScreen() {
                 getMatchesWithDetails(petId),
                 getBlocksWithDetails(petId)
             ])
-            
+
             if (matchesResponse?.success) {
                 setMatches(matchesResponse.data || [])
             }
@@ -62,13 +62,13 @@ export default function MatchesScreen() {
 
     useFocusEffect(React.useCallback(() => {
         useNavbarStore.getState().setActive(true)
-        
+
         if (!initialized.current) {
             fetchUserPets()
         } else if (selectedPetRef.current) {
             fetchMatches(selectedPetRef.current.id)
         }
-        
+
         return () => { }
     }, []))
 
@@ -81,10 +81,10 @@ export default function MatchesScreen() {
 
     const handleDelete = async () => {
         if (itemToDelete) {
-            const response = activeTab === 'matches' 
+            const response = activeTab === 'matches'
                 ? await deleteMatch(itemToDelete)
                 : await deleteBlock(itemToDelete)
-            
+
             if (response.success) {
                 if (selectedPet) {
                     await fetchMatches(selectedPet.id)
@@ -101,24 +101,24 @@ export default function MatchesScreen() {
     }
 
     const renderMatchCard = ({ item }: { item: IMatchWithPetDetails }) => {
-        const displayPet = item.petPrincipal.id === selectedPet?.id 
-            ? item.petMatch 
+        const displayPet = item.petPrincipal.id === selectedPet?.id
+            ? item.petMatch
             : item.petPrincipal
-        
-        const imagePet = displayPet.img1 
-            ? { uri: `${displayPet.img1}` } 
+
+        const imagePet = displayPet.img1
+            ? { uri: `${displayPet.img1}` }
             : require('../../assets/images/mockdog.png')
 
         return (
             <View style={styles.matchCard}>
                 <View style={styles.matchContent}>
                     <Image style={styles.petImage} source={imagePet} />
-                    
+
                     <View style={styles.petInfo}>
                         <Text style={styles.petName}>{displayPet.name}</Text>
                         <Text style={styles.petRace}>{displayPet.raca}</Text>
                         <Text style={styles.petAge}>{displayPet.age} anos • {displayPet.sexo === 'm' ? 'Macho' : 'Fêmea'}</Text>
-                        
+
                         {item.isReciprocal && (
                             <View style={styles.reciprocalBadge}>
                                 <FontAwesome name="heart" size={12} color="white" />
@@ -127,7 +127,7 @@ export default function MatchesScreen() {
                         )}
                     </View>
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={() => confirmDelete(item.id)}
                         style={styles.deleteButton}
                     >
@@ -139,26 +139,26 @@ export default function MatchesScreen() {
     }
 
     const renderBlockedCard = ({ item }: { item: IBlockedPetWithDetails }) => {
-        const displayPet = item.petPrincipal.id === selectedPet?.id 
-            ? item.petBlock 
+        const displayPet = item.petPrincipal.id === selectedPet?.id
+            ? item.petBlock
             : item.petPrincipal
-        
-        const imagePet = displayPet.img1 
-            ? { uri: `${displayPet.img1}` } 
+
+        const imagePet = displayPet.img1
+            ? { uri: `${displayPet.img1}` }
             : require('../../assets/images/mockdog.png')
 
         return (
             <View style={styles.matchCard}>
                 <View style={styles.matchContent}>
                     <Image style={styles.petImage} source={imagePet} />
-                    
+
                     <View style={styles.petInfo}>
                         <Text style={styles.petName}>{displayPet.name}</Text>
                         <Text style={styles.petRace}>{displayPet.raca}</Text>
                         <Text style={styles.petAge}>{displayPet.age} anos • {displayPet.sexo === 'm' ? 'Macho' : 'Fêmea'}</Text>
                     </View>
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={() => confirmDelete(item.id)}
                         style={styles.deleteButton}
                     >
@@ -171,12 +171,12 @@ export default function MatchesScreen() {
 
     const renderPetSelector = ({ item }: { item: IPet }) => {
         const isSelected = selectedPet?.id === item.id
-        const imagePet = item.img1 
-            ? { uri: `${API_BASE_URL}/${item.img1}` } 
+        const imagePet = item.img1
+            ? { uri: `${API_BASE_URL}/${item.img1}` }
             : require('../../assets/images/mockdog.png')
 
         return (
-            <TouchableOpacity 
+            <TouchableOpacity
                 onPress={() => handlePetChange(item)}
                 style={[styles.petSelectorItem, isSelected && styles.petSelectorItemSelected]}
             >
@@ -194,7 +194,7 @@ export default function MatchesScreen() {
 
                 <View style={styles.tabsWrapper}>
                     <View style={styles.tabsContainer}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.tab, activeTab === 'matches' && styles.tabActive]}
                             onPress={() => setActiveTab('matches')}
                         >
@@ -204,7 +204,7 @@ export default function MatchesScreen() {
                             </Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.tab, activeTab === 'blocked' && styles.tabActive]}
                             onPress={() => setActiveTab('blocked')}
                         >
@@ -215,7 +215,7 @@ export default function MatchesScreen() {
                         </TouchableOpacity>
                     </View>
                 </View>
-                
+
                 {petList.length > 0 && (
                     <View style={styles.petSelectorWrapper}>
                         <View style={styles.petSelectorContainer}>
@@ -286,7 +286,7 @@ export default function MatchesScreen() {
             <ConfirmationModal
                 visible={isModalVisible}
                 title={""}
-                message={activeTab === 'matches' 
+                message={activeTab === 'matches'
                     ? "Tem certeza que deseja desfazer este match?"
                     : "Tem certeza que deseja desbloquear este pet?"
                 }
@@ -294,7 +294,7 @@ export default function MatchesScreen() {
                 onCancel={() => {
                     setModalVisible(false)
                     setItemToDelete(null)
-                } } 
+                }}
             />
         </ImageBackground>
     )

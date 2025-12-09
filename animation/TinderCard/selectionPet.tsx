@@ -27,8 +27,8 @@ export default function SelectionPet({ onIndexChange }: { onIndexChange?: (index
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Procurando love para:</Text>
-            <ScrollView 
-                horizontal 
+            <ScrollView
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
             >
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         backgroundColor: 'white',
-        paddingTop: 50,
+        paddingTop: 30,
         paddingBottom: 10,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,

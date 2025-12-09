@@ -1,4 +1,4 @@
-import { View, Text, Dimensions, StyleSheet, TouchableOpacity, PanResponder } from 'react-native'
+import { View, Text, Dimensions, StyleSheet, TouchableOpacity, PanResponder, ActivityIndicator } from 'react-native'
 import React, { useCallback, useRef, useState } from 'react'
 import { getPets } from '@/services/pet';
 import { useFocusEffect } from 'expo-router';
@@ -19,6 +19,7 @@ const RESET_DURATION = 300;
 
 export default function index() {
   const [cards, setCards] = useState<ReceivedPet[]>([]);
+  const [isLoading, setLoading] = useState<boolean>(true);
   const cardsRef = useRef<ReceivedPet[]>([]);
 
   const [petPrincipalId, setPetPrincipalId] = useState('')
@@ -53,11 +54,13 @@ export default function index() {
 
     setCards(filteredPetList ?? [])
     setFeedLoaded(true)
+    setLoading(false)
 
   }
 
   useFocusEffect(
     useCallback(() => {
+      setLoading(true)
       async function fetchPetsFromUser() {
         const res = await getUser();
         if (res) {
@@ -70,7 +73,7 @@ export default function index() {
               await getPetsForFeed(petsList[0].id)
               initialized.current = true
             } else if (petPrincipalIdRef.current) {
-              
+
               await getPetsForFeed(petPrincipalIdRef.current)
             }
           }
@@ -85,7 +88,10 @@ export default function index() {
   async function changeFullId(index: string) {
     setPetPrincipalId(index);
     petPrincipalIdRef.current = index;
+    setLoading(true)
     getPetsForFeed(index);
+    setLoading(true)
+
   }
 
 
@@ -220,29 +226,39 @@ export default function index() {
     <View style={styles.container}>
       <SelectionPet onIndexChange={changeFullId} />
 
-      {cards.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Sem mais pets</Text>
-        </View>
-      ) : (
-        <>
-          <View style={styles.cardsWrapper}>
-            {cards.map(renderCard).reverse()}
+
+      {
+        isLoading ? (
+          <View style={styles.loadingContainer}>
+            <View style={styles.loadingBox}>
+              <ActivityIndicator size="large" color={Colors.laranja} />
+              <Text style={styles.loadingText}>Carregando...</Text>
+            </View>
           </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={handleDislike} style={styles.btn} >
-              <Ionicons name="close" size={45} color={Colors.laranja} />
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={handleLike} style={styles.btn} >
-              <Ionicons name="heart-outline" size={45} color={Colors.laranja} />
-            </TouchableOpacity>
-
+        ) : cards.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Sem mais pets</Text>
           </View>
+        ) : (
+          <>
+            <View style={styles.cardsWrapper}>
+              {cards.map(renderCard).reverse()}
+            </View>
 
-        </>
-      )
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={handleDislike} style={styles.btn}>
+                <Ionicons name="close" size={45} color={Colors.laranja} />
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={handleLike} style={styles.btn}>
+                <Ionicons name="heart-outline" size={45} color={Colors.laranja} />
+              </TouchableOpacity>
+            </View>
+          </>
+        )
       }
+
+
 
 
     </View >
@@ -294,5 +310,30 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 20,
     color: '#999'
-  }
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    paddingHorizontal: 20,
+  },
+  loadingBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 30,
+    paddingHorizontal: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    fontFamily: 'NunitoBold',
+    color: Colors.laranja,
+  },
 });
