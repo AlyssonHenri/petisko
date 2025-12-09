@@ -14,14 +14,35 @@ export default function LoginScreen() {
   const [user, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [userError, setUserError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [passwordCheckTouched, setPasswordCheckTouched] = useState(false);
 
   useFocusEffect(() => useNavbarStore.getState().setActive(false))
 
+  const validateFields = () => {
+    let valid = true;
+    if (!user) {
+      setUserError('O nome de usuário é obrigatório.');
+      valid = false;
+    } else {
+      setUserError('');
+    }
+
+    if (!password) {
+      setPasswordError('A senha é obrigatória.');
+      valid = false;
+    } else {
+      setPasswordError('');
+    }
+    return valid;
+  }
+
   const handleLoginPress = async (user: string, password: string) => {
+    if (!validateFields()) {
+      return;
+    }
     setLoading(true);
-    setError('');
 
     const res = await loginUser({ "username": user, "password": password });
 
@@ -69,19 +90,25 @@ export default function LoginScreen() {
             <View style={styles.content}>
               <View style={styles.fieldsContainer}>
                 <CustomInput
-                  onChangeText={(dado: SetStateAction<string>) => setUsername(dado)}
+                  onChangeText={(dado: SetStateAction<string>) => {
+                    setUsername(dado);
+                    if (userError) validateFields();
+                  }}
                   onFocus={() => setPasswordCheckTouched(true)}
                   placeholder='Digite seu login'
-                  //errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
+                  errorMessage={userError}
                   iconName='account'
                   value={user}
                 />
                 <CustomInput
-                  onChangeText={(dado: SetStateAction<string>) => setPassword(dado)}
+                  onChangeText={(dado: SetStateAction<string>) => {
+                    setPassword(dado);
+                    if (passwordError) validateFields();
+                  }}
                   onFocus={() => setPasswordCheckTouched(true)}
                   isPassword={true}
                   placeholder='Digite sua senha'
-                  //errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
+                  errorMessage={passwordError}
                   iconName='lock-check'
                   value={password}
                 />
