@@ -158,7 +158,7 @@ export default function CreatePet() {
     }
 
     const validateField = (field: string, value: string, touched: boolean) => {
-        if (!touched) return { isValid: false, message: '' };
+        if (!touched) return { isValid: true, message: '' };
         switch (field) {
             case 'nome':
                 if (!value.trim()) return { isValid: false, message: 'Nome é obrigatório' };
@@ -179,9 +179,9 @@ export default function CreatePet() {
     const racaError = useMemo(() => validateField('raca', raca, racaTouched), [raca, racaTouched]);
 
     const isFormValid = useMemo(() =>
-        (nameError.isValid || !nomeTouched) &&
-        (idadeError.isValid || !idadeTouched) &&
-        (racaError.isValid || !racaTouched) &&
+        nameError.isValid &&
+        idadeError.isValid &&
+        racaError.isValid &&
         nomePet.length > 0 && raca.length > 0 && idadePet.length > 0
         , [nameError, idadeError, racaError, nomePet, raca, idadePet]);
 

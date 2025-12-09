@@ -43,6 +43,7 @@ export default function RegisterScreen() {
   const [passwordCheckTouched, setPasswordCheckTouched] = useState(false);
   const [stateTouched, setStateTouched] = useState(false);
   const [cityTouched, setCityTouched] = useState(false);
+  const [imageTouched, setImageTouched] = useState(false);
   const [parte, setParte] = useState(1)
 
   useEffect(() => {
@@ -70,7 +71,6 @@ export default function RegisterScreen() {
 
   useFocusEffect(
     useCallback(() => {
-
       setUsername('');
       setPassword('');
       setPasswordCheck('');
@@ -82,6 +82,7 @@ export default function RegisterScreen() {
       setState(null);
       setCity(null);
       setCityList([]);
+      setImage(null);
       setNameTouched(false);
       setCpfTouched(false);
       setUserNameTouched(false);
@@ -89,6 +90,7 @@ export default function RegisterScreen() {
       setPasswordCheckTouched(false);
       setStateTouched(false);
       setCityTouched(false);
+      setImageTouched(false);
     }, [])
   );
 
@@ -217,6 +219,12 @@ export default function RegisterScreen() {
         }
         return { isValid: true, message: '' };
 
+      case 'image':
+        if (!value) {
+          return { isValid: false, message: 'Foto de perfil é obrigatória' };
+        }
+        return { isValid: true, message: '' };
+
       default:
         return { isValid: true, message: '' };
     }
@@ -229,17 +237,18 @@ export default function RegisterScreen() {
   const passwordCheckError = useMemo(() => validateField('passwordCheck', passwordCheck, passwordCheckTouched, password), [passwordCheck, passwordCheckTouched, password]);
   const stateError = useMemo(() => validateField('state', state || '', stateTouched), [state, stateTouched]);
   const cityError = useMemo(() => validateField('city', city || '', cityTouched), [city, cityTouched]);
+  const imageError = useMemo(() => validateField('image', image || '', imageTouched), [image, imageTouched]);
 
-  const formPart1Valid = useMemo(() => nameError.isValid && cpfError.isValid && usernameError.isValid && passwordError.isValid && passwordCheckError.isValid, [nameError, cpfError, usernameError, passwordError, passwordCheckError]);
+  const formPart1Valid = useMemo(() => nameError.isValid && cpfError.isValid && usernameError.isValid && passwordError.isValid && passwordCheckError.isValid && imageError.isValid, [nameError, cpfError, usernameError, passwordError, passwordCheckError, imageError]);
   const formPart2Valid = useMemo(() => stateError.isValid && cityError.isValid, [stateError, cityError]);
 
   const isFormValid = useMemo(() => formPart1Valid && formPart2Valid, [formPart1Valid, formPart2Valid]);
 
 
-  const firstStepData = {user, cpf, userName, password, passwordCheck} 
+  const firstStepData = {user, cpf, userName, password, passwordCheck, image} 
   const secondStepData = {state, city}
-  const isFirstStepFormFilled = Object.values(firstStepData).every(value => value.trim() !== '');
-  const isSecondStepFormFilled = Object.values(secondStepData).every(value => {if(value== null) return false; if (value.trim() !== '') return true;}); 
+  const isFirstStepFormFilled = Object.values(firstStepData).every(value => value !== null && value !== '');
+  const isSecondStepFormFilled = Object.values(secondStepData).every(value => {if(value== null) return false; if (value && value.trim() !== '') return true; return false;}); 
 
 
   const markPart1AsTouched = () => {
@@ -257,11 +266,10 @@ export default function RegisterScreen() {
   };
 
   const handleContinuePress = () => {
-    console.log(formPart1Valid)
+    markPart1AsTouched();
     if(!formPart1Valid){
       return 
     }
-    markPart1AsTouched();
     setParte(2);
   };
 
@@ -309,7 +317,7 @@ export default function RegisterScreen() {
       <KeyboardAvoidingView style={styles.content} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.fieldsContainer}>
-            <TouchableOpacity onPress={pickImage} style={styles.profilePicContainer}>
+            <TouchableOpacity onPress={() => { setImageTouched(true); pickImage(); }} style={styles.profilePicContainer}>
               <View style={styles.profilePicWrapper}>
                 <Image
                     style={styles.profilePic}
@@ -321,6 +329,9 @@ export default function RegisterScreen() {
               </View>
             </TouchableOpacity>
             <Text style={styles.changePhotoText}>Alterar foto</Text>
+            { !imageError.isValid && (
+              <Text style={styles.dropdownErrorText}>{imageError.message}</Text>
+            )}
           </View>
 
           {parte === 1 ? (
@@ -442,14 +453,14 @@ export default function RegisterScreen() {
               <TouchableOpacity
                 style={[
                   styles.registerButton,
-                  !isFormValid && !isSecondStepFormFilled && styles.registerButtonDisabled
+                  !isSecondStepFormFilled && styles.registerButtonDisabled
                 ]}
                 onPress={handleRegisterPress}
-                disabled={!isFormValid}
+                disabled={!isSecondStepFormFilled}
               >
                 <Text style={[
                   styles.registerButtonText,
-                  !isFormValid && !isSecondStepFormFilled &&  styles.registerButtonTextDisabled
+                  !isSecondStepFormFilled &&  styles.registerButtonTextDisabled
                 ]}>
                   Cadastrar
                 </Text>

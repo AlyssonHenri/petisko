@@ -12,7 +12,6 @@ import { image } from "@/constants/bg";
 import { AddButton } from "@/components/addButton";
 import { IPet, RootPet } from "@/interfaces/pet";
 import {deletePet} from '@/services/pet'
-import { isNavbarActive } from "@/controllers/navbar-controller";
 import { useNavbarStore } from "./_layout";
 
 export default function ProfileScreen() {

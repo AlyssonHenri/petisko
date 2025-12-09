@@ -3,7 +3,7 @@ import Colors from "@/constants/Colors";
 import { RootUser } from "@/interfaces/user";
 import getUser from "@/services/getUserInfo";
 import updateUser, { updateUserImage } from "@/services/updateUserInfo";
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -43,6 +43,29 @@ export default function EditProfileScreen() {
     const [cityList, setCityList] = useState<{ label: string; value: string }[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalInfo, setModalInfo] = useState({ title: '', message: '', type: 'error' as 'success' | 'error' });
+
+    const [nameError, setNameError] = useState('');
+    const [usernameError, setUsernameError] = useState('');
+    const [nameTouched, setNameTouched] = useState(false);
+    const [usernameTouched, setUsernameTouched] = useState(false);
+
+    const validateField = () => {
+        let valid = true;
+        if (!name || name.length < 2) {
+            setNameError('O nome deve ter pelo menos 2 caracteres.');
+            valid = false;
+        } else {
+            setNameError('');
+        }
+
+        if (!username || username.length < 3) {
+            setUsernameError('O nome de usuário deve ter pelo menos 3 caracteres.');
+            valid = false;
+        } else {
+            setUsernameError('');
+        }
+        return valid;
+    };
 
     useFocusEffect(useCallback(() => {
         setUserInfo(null);
@@ -123,6 +146,10 @@ export default function EditProfileScreen() {
         }
     };
 
+    const isFormValid = useMemo(() => {
+        return !nameError && !usernameError && name.length > 0 && username.length > 0;
+    }, [name, username, nameError, usernameError]);
+
     async function getCities(value: string) {
         const citiesList = await getCitiesFromState(value);
         const formatted = citiesList.map(city => ({
@@ -134,6 +161,11 @@ export default function EditProfileScreen() {
     }
 
     const handleSave = async () => {
+        setNameTouched(true);
+        setUsernameTouched(true);
+        if (!validateField()) {
+            return;
+        }
         setSaving(true);
         try {
             const selectedState = stateList.find(s => s.value === state);
@@ -236,17 +268,27 @@ export default function EditProfileScreen() {
                         
                         <CustomInput
                             value={name}
-                            onChangeText={setName}
+                            onChangeText={(text) => {
+                                setName(text);
+                                if (nameTouched) validateField();
+                            }}
+                            onFocus={() => setNameTouched(true)}
                             placeholder="Nome Completo"
                             iconName="account"
+                            errorMessage={nameTouched ? nameError : ''}
                         />
 
                         <CustomInput
                             value={username}
-                            onChangeText={setUsername}
+                            onChangeText={(text) => {
+                                setUsername(text);
+                                if (usernameTouched) validateField();
+                            }}
+                            onFocus={() => setUsernameTouched(true)}
                             placeholder="Nome de Usuário"
                             iconName="at"
                             autoCapitalize="none"
+                            errorMessage={usernameTouched ? usernameError : ''}
                         />
 
                         <View style={styles.dropdownWrapper}>
@@ -302,8 +344,8 @@ export default function EditProfileScreen() {
 
                         <TouchableOpacity
                             onPress={handleSave}
-                            style={styles.saveButton}
-                            disabled={saving}
+                            style={[styles.saveButton, !isFormValid && styles.saveButtonDisabled]}
+                            disabled={saving || !isFormValid}
                         >
                             {saving ? (
                                 <ActivityIndicator color="white" />
@@ -443,5 +485,9 @@ const styles = StyleSheet.create({
         fontFamily: 'NunitoBold',
         fontSize: 18,
         color: 'white',
+    },
+    saveButtonDisabled: {
+        backgroundColor: '#A0A0A0',
+        elevation: 0,
     },
 });
