@@ -4,7 +4,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { BackHandler, Platform, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
@@ -33,12 +33,24 @@ export default function RootLayout() {
     PoppinsExtraLight: require('../assets/fonts/Poppins/Poppins-ExtraLight.ttf'),
     NunitoBlack: require('../assets/fonts/Nunito/Nunito-Black.ttf'),
     NunitoExtraLight: require('../assets/fonts/Nunito/Nunito-ExtraLight.ttf'),
+    NunitoLight: require('../assets/fonts/Nunito/Nunito-Light.ttf'),
     NunitoBold: require('../assets/fonts/Nunito/Nunito-Bold.ttf'),
     NunitoMedium: require('../assets/fonts/Nunito/Nunito-Medium.ttf'),
     NunitoRegular: require('../assets/fonts/Nunito/Nunito-Regular.ttf'),
 
     ...FontAwesome.font,
   });
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+
+    const sub = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => true
+    );
+
+    return () => sub.remove();
+  }, []);
 
   const [showSplash, setShowSplash] = useState(true);
   useEffect(() => {
@@ -53,13 +65,13 @@ export default function RootLayout() {
 
   if (!loaded || showSplash) {
     return (
-      <CustomSplashScreen 
+      <CustomSplashScreen
         onFinish={() => {
           console.log('Splash screen finished, loaded:', loaded);
           setTimeout(() => {
             setShowSplash(false);
           }, 100);
-        }} 
+        }}
       />
     );
   }
@@ -72,9 +84,11 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
+      <Stack screenOptions={{
+        gestureEnabled: false,
+      }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
     </ThemeProvider>
   );
 }

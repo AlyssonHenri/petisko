@@ -12,6 +12,7 @@ export async function saveBearerToken(token: string) {
 }
 
 export default async function loginUser(user: UserLogin) {
+  console.log(user)
   try {
     const response = await axios.post(`${API_BASE_URL}/auth/jwt/create/`, {
       username: user.username,
@@ -19,10 +20,9 @@ export default async function loginUser(user: UserLogin) {
     });
 
     await saveBearerToken(response.data.access);
-    return response.data.access;
-  } catch (error) {
-    console.error('Erro no login:', error);
-    throw error; // Re-throw para que o componente possa tratar
+    return { success: true, data: response.data.access };
+  } catch (error: any) {
+    return { success: false, data: error.response?.data }; // Re-throw para que o componente possa tratar
   }
 }
 

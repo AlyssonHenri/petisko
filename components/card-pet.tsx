@@ -1,26 +1,70 @@
+import { API_BASE_URL } from "@/constants/ApiConfig";
 import Colors from "@/constants/Colors";
+import { IPet } from "@/interfaces/pet";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import ConfirmationModal from "./ConfirmationModal";
+import { useState } from "react";
 
-export default function CardPet({name, imageSrc, typePet, avaliable, canEdit}: {name: string, imageSrc: string, typePet: string, avaliable: boolean, canEdit: boolean}){
-    const imagePet = require('../assets/images/mockdog.png')
+export default function CardPet({pet, avaliable, canEdit, onPressEdit, onPressDelete}: {pet: IPet, avaliable: boolean, canEdit: boolean, onPressEdit?: () => void, onPressDelete?: () => void}){
+    const [isModalVisible, setModalVisible] = useState(false);
+    
+    if(!pet){
+        return null
+    }
+
+    const imagePet = pet.img1 ? { uri: `${API_BASE_URL}/${pet.img1}` } : require('../assets/images/mockdog.png') 
+
     return (
         <View style={{flex: 1, alignItems: 'center'}}>
             <View style={styles.card}>
-                <View style={{position: 'absolute', paddingHorizontal: 5, borderRadius: 10, right: 10, top: 10, backgroundColor: '#FF4E26'}}><Text style={{color: 'white', fontFamily: 'NunitoBold', fontSize: 10}}>PROCURANDO ROMANCE <FontAwesome name="heart" size={10} color="white" /></Text></View>
-                <Image style={{width: 90, height: 90, borderRadius: 90/2}}source={imagePet}></Image>
-                <View style={{justifyContent: 'center', marginBottom: 10}} >
-                    <Text style={{color: 'white', fontFamily: 'NunitoBlack', fontSize: 20}}>{name}</Text>
-                    <Text style={{color: 'white', fontFamily: 'NunitoBold', fontSize: 14, marginTop: -5}}>{typePet}</Text>
-                </View>
-                <View style={{position: 'absolute', bottom: 10, right: 10}}>
-                             <TouchableOpacity onPress={() => {}}  style={styles.editarPerfil}>
-                    <Text style={{textAlign: 'center', fontFamily: 'NunitoBold', fontSize: 16, color: Colors.laranjaVariado}}>Editar <FontAwesome name="edit" size={20} color={Colors.laranjaVariado} />
 
-</Text>
-                </TouchableOpacity>
+                {avaliable && (
+                    <View style={{position: 'absolute', paddingHorizontal: 5, borderRadius: 10, right: 10, top: 10, backgroundColor: '#FF4E26'}}>
+                        <Text style={{color: 'white', fontFamily: 'NunitoBold', fontSize: 10}}>
+                            PROCURANDO ROMANCE 
+                            <FontAwesome name="heart" size={10} color="white" />
+                        </Text>
+                    </View>
+                )}
+
+                <Image style={{width: 90, height: 90, borderRadius: 90/2}}source={imagePet}></Image>
+                
+                <View style={{justifyContent: 'center', marginBottom: 10}} >
+                    <Text style={{color: 'white', fontFamily: 'NunitoBlack', fontSize: 20}}>{pet.name}</Text>
+                    <Text style={{color: 'white', fontFamily: 'NunitoBold', fontSize: 14, marginTop: -5}}>{pet.raca}</Text>
+                </View>
+
+                <View style={{position: 'absolute', bottom: 10, right: 10}}>
+                    {canEdit && (
+                        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 15}}>
+                            <TouchableOpacity onPress={onPressEdit}  style={styles.editButton}>
+                                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5}}>
+                                    <Text style={{textAlign: 'center', fontFamily: 'NunitoBold', fontSize: 16, color: Colors.laranja}}>
+                                        Editar 
+                                    </Text>
+                                    <FontAwesome style={{marginTop: 2}} name="edit" size={20} color={Colors.laranja} />
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setModalVisible(true)}  style={styles.deleteButton}>
+                                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                                    <FontAwesome style={{marginTop: 2}} name="trash" size={20} color={'white'} />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             </View>
+            <ConfirmationModal
+                visible={isModalVisible}
+                title="Confirmar Exclusão"
+                message={`Tem certeza que deseja excluir o perfil de ${pet.name}?`}
+                onConfirm={() => {
+                    if(onPressDelete) onPressDelete();
+                    setModalVisible(false);
+                }}
+                onCancel={() => setModalVisible(false)}
+            />
         </View>
     )
 }
@@ -33,16 +77,60 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 5,
         position: 'relative',
-        gap: 10
+        gap: 10,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+            },
+            android: {
+                elevation: 5,
+                shadowColor: '#000',
+            },
+        }),
     },
-    editarPerfil: {
+    editButton: {
         backgroundColor: 'white', 
-        padding: 10,
-        borderRadius: 10,
-        flex: 1,
+        paddingVertical: 5,
+        paddingHorizontal: 15,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
         height: 40,
-        marginTop: 20
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+            },
+            android: {
+                elevation: 3,
+                shadowColor: '#000',
+            },
+        }),
     },
+    deleteButton: {
+        backgroundColor: '#FF4E26',
+        padding: 10,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 40,
+        width: 40,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+            },
+            android: {
+                elevation: 3,
+                shadowColor: '#000',
+            },
+        }),
+    }
 })
