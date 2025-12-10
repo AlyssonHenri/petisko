@@ -70,7 +70,7 @@ export default function LoginScreen() {
       Toast.show({
         type: 'error',
         text1: 'Falha no login',
-        text2: res.data[0],
+        //text2: res.data[0],
         position: 'bottom',
         visibilityTime: 5000,
         autoHide: true,
