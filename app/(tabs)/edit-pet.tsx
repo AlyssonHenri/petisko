@@ -50,7 +50,7 @@ export default function CreatePet() {
             setRacaTouched(false);
 
             const petData: IPet = params.data ? JSON.parse(params.data as string) : null;
-            
+
             if (!petData) {
                 setModalInfo({ title: 'Erro', message: 'Nenhum dado de pet encontrado.', type: 'error' });
                 setModalVisible(true);
@@ -75,8 +75,8 @@ export default function CreatePet() {
             setNomeTouched(false);
             setIdadeTouched(false);
             setRacaTouched(false);
-            
-            return () => {};
+
+            return () => { };
         }, [params.data])
     );
 
@@ -144,7 +144,7 @@ export default function CreatePet() {
     async function handleSave(pet: IPet): Promise<void> {
         try {
             const res: any = await editPet(pet);
-            if (res.success){
+            if (res.success) {
                 setModalInfo({ title: 'Sucesso', message: 'Pet editado com sucesso!', type: 'success' });
                 setModalVisible(true);
             } else {
@@ -187,7 +187,7 @@ export default function CreatePet() {
 
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1}}
+            style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <ImageBackground source={image} style={styles.imageBackground}>
@@ -196,33 +196,33 @@ export default function CreatePet() {
                     title="Editar Pet"
                     onBackPress={() => router.push('/profile')}
                 />
-                <ScrollView 
+                <ScrollView
                     contentContainerStyle={styles.content}
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={styles.imagesContainer}>
-                        <ScrollView 
-                            horizontal={true} 
+                        <ScrollView
+                            horizontal={true}
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={styles.imagesHorizontalScroll}
                         >
                             {[0, 1, 2, 3].map((index) => {
                                 const isMain = index === 0;
                                 const picStyle = [
-                                    styles.pictureBase, 
+                                    styles.pictureBase,
                                     isMain ? styles.pictureMain : styles.pictureSecondary
                                 ];
-                                
+
                                 return (
                                     <TouchableOpacity key={index} onPress={() => pickImage(index)} style={styles.imageWrapper}>
                                         <View style={picStyle}>
                                             {images[index] ? (
                                                 <Image source={{ uri: `${API_BASE_URL}${images[index]}` }} style={styles.imgFill} />
                                             ) : (
-                                                <Icon 
-                                                    source={isMain ? 'camera-plus' : 'plus'} 
-                                                    size={isMain ? 32 : 24} 
-                                                    color="white" 
+                                                <Icon
+                                                    source={isMain ? 'camera-plus' : 'plus'}
+                                                    size={isMain ? 32 : 24}
+                                                    color="white"
                                                 />
                                             )}
                                         </View>
@@ -286,7 +286,7 @@ export default function CreatePet() {
                             >
                                 {vacinas.map((item, index) => (
                                     <View key={item.id} style={styles.vaccineInputContainer}>
-                                        <View style={{flex: 1}}>
+                                        <View style={{ flex: 1 }}>
                                             <CustomInput
                                                 onChangeText={(valor) => {
                                                     setVacinas(prev =>
@@ -325,7 +325,7 @@ export default function CreatePet() {
                                 id: idPet,
                                 name: nomePet,
                                 age: idadePet,
-                                img1: images[0] === imagesInit[0] ? '' : images[0] ,
+                                img1: images[0] === imagesInit[0] ? '' : images[0],
                                 img2: images[1] === imagesInit[1] ? '' : images[1],
                                 img3: images[2] === imagesInit[2] ? '' : images[2],
                                 img4: images[3] === imagesInit[3] ? '' : images[3],
@@ -340,7 +340,7 @@ export default function CreatePet() {
 
                         <View style={{ height: 40 }} />
                     </View>
-                </ScrollView> 
+                </ScrollView>
                 <PopupModal
                     visible={modalVisible}
                     title={modalInfo.title}
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
         textShadowColor: 'rgba(0, 0, 0, 0.5)',
-        textShadowOffset: {width: 0, height: 1},
+        textShadowOffset: { width: 0, height: 1 },
         textShadowRadius: 2,
     },
     formContainer: {
@@ -452,8 +452,8 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontFamily: 'NunitoBold',
         color: Colors.laranjaVariado || '#E4A985',
-        marginBottom: 15, 
-        marginTop: 10,    
+        marginBottom: 15,
+        marginTop: 10,
         textAlign: 'center',
     },
     vaccineInputContainer: {
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     },
     registerButton: {
         backgroundColor: Colors.laranja,
-        paddingVertical: 18, 
+        paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',
         shadowColor: '#000',

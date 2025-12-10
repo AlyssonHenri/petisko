@@ -11,12 +11,21 @@ import { useFocusEffect } from '@react-navigation/native';
 import { image } from "@/constants/bg";
 import { AddButton } from "@/components/addButton";
 import { IPet, RootPet } from "@/interfaces/pet";
-import {deletePet} from '@/services/pet'
+import { deletePet } from '@/services/pet'
 import { useNavbarStore } from "./_layout";
+import PopupModal from "@/components/PopupModal";
 
 export default function ProfileScreen() {
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
     const [petList, setPetList] = useState<IPet[]>([]);
+    const [modalVisible, setModalVisible] = useState(false);
+    type ModalType = 'error' | 'success' | 'conf';
+
+    const [modalInfo, setModalInfo] = useState<{ title: string, message: string, type: ModalType }>({
+        title: '',
+        message: '',
+        type: 'error',
+    });
 
     async function fetchUser() {
         const res = await getUser();
@@ -48,11 +57,28 @@ export default function ProfileScreen() {
         fetchUser();
     }
 
+    const handleConfirmation = () => {
+        setModalInfo({ title: 'Logout', message: 'Deseja mesmo realizar logout?', type: 'conf' });
+        setModalVisible(true);
+    }
+    const handleModalClose = () => {
+        setModalVisible(false);
+    };
+    const handleLogout = () => {
+        router.replace('/(tabs)')
+        setModalVisible(false);
+
+    }
+
     if (userInfo && userInfo.name) {
         return (
             <ImageBackground source={image} style={styles.imageBackground}>
-                <View style={{flex: 1, backgroundColor: 'transparent'}}>
+                <View style={{ flex: 1, backgroundColor: 'transparent' }}>
                     <View style={styles.topPage}>
+                        <TouchableOpacity onPress={handleConfirmation} style={{ position: 'absolute', left: 15, top: 30, padding: 5 }}>
+                            <FontAwesome name="sign-out" size={35} color="black" />
+                        </TouchableOpacity>
+
                         <View style={styles.profilePicWrapper}>
                             <Image
                                 style={styles.profilePic}
@@ -68,27 +94,35 @@ export default function ProfileScreen() {
                         </View>
                         <TouchableOpacity onPress={() => router.push('/edit-profile')} style={styles.editarPerfil}>
                             <Text style={styles.buttonText}>
-                                Editar Perfil 
+                                Editar Perfil
                             </Text>
-                            <FontAwesome style={{marginTop: 2}} name="edit" size={20} color="white" />
+                            <FontAwesome style={{ marginTop: 2 }} name="edit" size={20} color="white" />
                         </TouchableOpacity>
                     </View>
 
                     <Text style={styles.sectionTitle}>Meus Pets</Text>
-                    <View style={{paddingHorizontal: 10, marginBottom: 15}}>
+                    <View style={{ paddingHorizontal: 10, marginBottom: 15 }}>
                         <AddButton
                             title="Novo Pet"
                             onPress={() => router.push("/createPet")}
                         />
                     </View>
 
-                    <FlatList 
-                        contentContainerStyle={{ paddingHorizontal: 10, gap: 15, paddingBottom: 20}}
+                    <FlatList
+                        contentContainerStyle={{ paddingHorizontal: 10, gap: 15, paddingBottom: 20 }}
                         data={petList}
-                        renderItem={({item}) => <CardPet pet={item} avaliable={true} canEdit={true} onPressEdit={() => handlePetSelect(item)} onPressDelete={() => handlePetDelete(item)}/>}
+                        renderItem={({ item }) => <CardPet pet={item} avaliable={true} canEdit={true} onPressEdit={() => handlePetSelect(item)} onPressDelete={() => handlePetDelete(item)} />}
                         keyExtractor={(item) => item.id.toString()}
                     />
                 </View>
+                <PopupModal
+                    visible={modalVisible}
+                    title={modalInfo.title}
+                    message={modalInfo.message}
+                    onClose={handleModalClose}
+                    onConfirm={handleLogout}
+                    type={modalInfo.type}
+                />
             </ImageBackground>
         )
     }

@@ -4,7 +4,7 @@ import Colors from '@/constants/Colors';
 import LoginInput from '@/components/custom-login-input';
 import loginUser from '@/services/login';
 import { router, useFocusEffect } from 'expo-router';
-import { SetStateAction, useEffect, useState, useMemo, useCallback } from 'react';
+import React, { SetStateAction, useEffect, useState, useMemo, useCallback } from 'react';
 import CustomInput from '@/components/generic_input';
 import ToastManager, { Toast } from 'toastify-react-native'
 import { useNavbarStore } from './_layout';
@@ -18,7 +18,12 @@ export default function LoginScreen() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordCheckTouched, setPasswordCheckTouched] = useState(false);
 
-  useFocusEffect(() => useNavbarStore.getState().setActive(false))
+  useFocusEffect(React.useCallback(() => {
+    useNavbarStore.getState().setActive(false);
+    setPassword('')
+    setUsername('')
+
+  }, []));
 
   const validateFields = () => {
     let valid = true;
@@ -56,6 +61,7 @@ export default function LoginScreen() {
         autoHide: true,
 
       })
+
       setTimeout(() => router.push('/profile'), 2000)
 
 
@@ -64,14 +70,15 @@ export default function LoginScreen() {
       Toast.show({
         type: 'error',
         text1: 'Falha no login',
-        text2: res.data,
+        text2: res.data[0],
         position: 'bottom',
         visibilityTime: 5000,
         autoHide: true,
 
       })
-      setLoading(false);
     }
+    setLoading(false);
+
   };
 
   return (
@@ -123,7 +130,7 @@ export default function LoginScreen() {
               <TouchableOpacity
                 onPress={() => handleLoginPress(user, password)}
                 style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-                disabled={loading}
+              //disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator color={Colors.creme} size={'large'} />

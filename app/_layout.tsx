@@ -4,7 +4,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { BackHandler, Platform, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
@@ -41,6 +41,17 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+
+    const sub = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => true
+    );
+
+    return () => sub.remove();
+  }, []);
+
   const [showSplash, setShowSplash] = useState(true);
   useEffect(() => {
     if (error) throw error;
@@ -73,7 +84,9 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
-      <Stack>
+      <Stack screenOptions={{
+        gestureEnabled: false,
+      }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
