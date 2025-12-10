@@ -109,7 +109,7 @@ export default function CreatePet() {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            aspect: [1, 1],
+            aspect: [9, 16],
             quality: 1,
         });
 

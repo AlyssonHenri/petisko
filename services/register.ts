@@ -27,6 +27,7 @@ export default async function registerUser(user: UserRegister): Promise<{ succes
     });
     return { success: true, data: response.data };
   } catch (error: any) {
+    console.log(error.response.data)
     return { success: false, data: error.response.data };
   }
 }

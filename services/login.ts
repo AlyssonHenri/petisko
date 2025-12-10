@@ -14,6 +14,7 @@ export async function saveBearerToken(token: string) {
 export default async function loginUser(user: UserLogin) {
   console.log(user)
   try {
+    console.log(API_BASE_URL)
     const response = await axios.post(`${API_BASE_URL}/auth/jwt/create/`, {
       username: user.username,
       password: user.password
@@ -22,6 +23,7 @@ export default async function loginUser(user: UserLogin) {
     await saveBearerToken(response.data.access);
     return { success: true, data: response.data.access };
   } catch (error: any) {
+    console.log(error)
     return { success: false, data: error.response?.data }; // Re-throw para que o componente possa tratar
   }
 }

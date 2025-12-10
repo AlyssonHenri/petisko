@@ -17,7 +17,7 @@ import { AddButton } from "@/components/addButton"
 
 export default function CreatePet() {
     const router = useRouter();
-    
+
     const [nomePet, setNomePet] = useState('');
     const [idadePet, setIdadePet] = useState('');
     const [raca, setRaca] = useState('');
@@ -28,7 +28,7 @@ export default function CreatePet() {
     const [nomeTouched, setNomeTouched] = useState(false);
     const [idadeTouched, setIdadeTouched] = useState(false);
     const [racaTouched, setRacaTouched] = useState(false);
-    
+
     const [userInfo, setUserInfo] = useState<RootUser | null>(null);
 
     const resetForm = () => {
@@ -52,7 +52,7 @@ export default function CreatePet() {
                 setUserInfo(user!);
             }
             fetchUser();
-            return () => {};
+            return () => { };
         }, [])
     );
 
@@ -65,7 +65,7 @@ export default function CreatePet() {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            aspect: [1, 1],
+            aspect: [9, 16],
             quality: 1,
         });
 
@@ -88,7 +88,7 @@ export default function CreatePet() {
 
     async function handleCadPet(pet: RootPet): Promise<void> {
         const res: any = await registerPet(userInfo?.id!, pet);
-        if (res.success){
+        if (res.success) {
             router.push('/profile')
         }
     }
@@ -125,7 +125,7 @@ export default function CreatePet() {
 
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1}}
+            style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <ImageBackground source={image} style={styles.imageBackground}>
@@ -134,33 +134,33 @@ export default function CreatePet() {
                     title="Novo Pet"
                     onBackPress={() => router.push('/profile')}
                 />
-                <ScrollView 
+                <ScrollView
                     contentContainerStyle={styles.content}
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={styles.imagesContainer}>
-                        <ScrollView 
-                            horizontal={true} 
+                        <ScrollView
+                            horizontal={true}
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={styles.imagesHorizontalScroll}
                         >
                             {[0, 1, 2, 3].map((index) => {
                                 const isMain = index === 0;
                                 const picStyle = [
-                                    styles.pictureBase, 
+                                    styles.pictureBase,
                                     isMain ? styles.pictureMain : styles.pictureSecondary
                                 ];
-                                
+
                                 return (
                                     <TouchableOpacity key={index} onPress={() => pickImage(index)} style={styles.imageWrapper}>
                                         <View style={picStyle}>
                                             {images[index] ? (
                                                 <Image source={{ uri: images[index] }} style={styles.imgFill} />
                                             ) : (
-                                                <Icon 
-                                                    source={isMain ? 'camera-plus' : 'plus'} 
-                                                    size={isMain ? 32 : 24} 
-                                                    color="white" 
+                                                <Icon
+                                                    source={isMain ? 'camera-plus' : 'plus'}
+                                                    size={isMain ? 32 : 24}
+                                                    color="white"
                                                 />
                                             )}
                                         </View>
@@ -272,7 +272,7 @@ export default function CreatePet() {
 
                         <View style={{ height: 40 }} />
                     </View>
-                </ScrollView> 
+                </ScrollView>
 
             </ImageBackground>
         </KeyboardAvoidingView>
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
         textShadowColor: 'rgba(0, 0, 0, 0.5)',
-        textShadowOffset: {width: 0, height: 1},
+        textShadowOffset: { width: 0, height: 1 },
         textShadowRadius: 2,
     },
     formContainer: {
@@ -378,8 +378,8 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontFamily: 'NunitoBold',
         color: Colors.laranjaVariado || '#E4A985',
-        marginBottom: 15, 
-        marginTop: 10,    
+        marginBottom: 15,
+        marginTop: 10,
         textAlign: 'center',
     },
     vaccineContainer: {
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     },
     registerButton: {
         backgroundColor: Colors.laranja,
-        paddingVertical: 18, 
+        paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',
         shadowColor: '#000',

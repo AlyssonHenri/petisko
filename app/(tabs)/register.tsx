@@ -1,4 +1,4 @@
-import { Image, Keyboard, StyleSheet, TouchableOpacity, Pressable, KeyboardAvoidingView, ScrollView, Platform, Alert } from 'react-native';
+import { Image, Keyboard, StyleSheet, TouchableOpacity, Pressable, KeyboardAvoidingView, ScrollView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { SetStateAction, useEffect, useState, useMemo, useCallback } from 'react';
@@ -7,21 +7,23 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import registerUser from '@/services/register';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import CustomInput from '@/components/generic_input'; 
+import CustomInput from '@/components/generic_input';
 import MaskedInput from '@/components/masked_input';
 import * as ImagePicker from 'expo-image-picker';
 import { Header } from '@/components/header';
 import { Icon } from 'react-native-paper';
 import ToastManager, { Toast } from 'toastify-react-native'
+import * as ImageManipulator from 'expo-image-manipulator';
+
 
 
 interface ValidationResult {
- isValid: boolean;
- message: string;
+  isValid: boolean;
+  message: string;
 }
 
 export default function RegisterScreen() {
-  
+
   const [actualError, setActualError] = useState('');
   const [user, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -45,6 +47,8 @@ export default function RegisterScreen() {
   const [cityTouched, setCityTouched] = useState(false);
   const [imageTouched, setImageTouched] = useState(false);
   const [parte, setParte] = useState(1)
+  const [isLoading, setLoading] = useState(false)
+
 
   useEffect(() => {
     getStates().then(statesApi => {
@@ -52,22 +56,22 @@ export default function RegisterScreen() {
         label: state.name,
         value: state.state_code,
       }));
-        setStateList(formatted);
-        setParte(1 )
+      setStateList(formatted);
+      setParte(1)
     })
   }, [])
 
- useEffect(() => {
-  if (state) {
-    const selectedState = stateList.find(item => item.value === state);
-    if (selectedState) {
-      setCity(null);
-      getCities(selectedState.label);
+  useEffect(() => {
+    if (state) {
+      const selectedState = stateList.find(item => item.value === state);
+      if (selectedState) {
+        setCity(null);
+        getCities(selectedState.label);
+      }
+    } else {
+      setCityList([]);
     }
-  } else {
-    setCityList([]);
-  }
- }, [state, stateList])
+  }, [state, stateList])
 
   useFocusEffect(
     useCallback(() => {
@@ -91,6 +95,7 @@ export default function RegisterScreen() {
       setStateTouched(false);
       setCityTouched(false);
       setImageTouched(false);
+      setParte(1)
     }, [])
   );
 
@@ -98,12 +103,19 @@ export default function RegisterScreen() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+      aspect: [1, 1],
+      quality: 0.7,
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      setImage(manipulatedImage.uri);
+      setImageTouched(true);
     }
   };
 
@@ -245,10 +257,10 @@ export default function RegisterScreen() {
   const isFormValid = useMemo(() => formPart1Valid && formPart2Valid, [formPart1Valid, formPart2Valid]);
 
 
-  const firstStepData = {user, cpf, userName, password, passwordCheck, image} 
-  const secondStepData = {state, city}
+  const firstStepData = { user, cpf, userName, password, passwordCheck, image }
+  const secondStepData = { state, city }
   const isFirstStepFormFilled = Object.values(firstStepData).every(value => value !== null && value !== '');
-  const isSecondStepFormFilled = Object.values(secondStepData).every(value => {if(value== null) return false; if (value && value.trim() !== '') return true; return false;}); 
+  const isSecondStepFormFilled = Object.values(secondStepData).every(value => { if (value == null) return false; if (value && value.trim() !== '') return true; return false; });
 
 
   const markPart1AsTouched = () => {
@@ -267,211 +279,228 @@ export default function RegisterScreen() {
 
   const handleContinuePress = () => {
     markPart1AsTouched();
-    if(!formPart1Valid){
-      return 
+    if (!formPart1Valid) {
+      return
     }
     setParte(2);
   };
 
   const handleRegisterPress = async () => {
+    setLoading(true)
     if (!isFormValid) {
       markAllFieldsAsTouched();
       return;
     }
 
-     const response = await registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state ?? '', "city": city ?? '', "img": image ?? '' })
+    const response = await registerUser({ "name": user, "username": userName, "password": password, "cpf": cpf, "state": state ?? '', "city": city ?? '', "img": image ?? '' })
+    setLoading(false)
+    console.log(response)
 
-    if (response.success){
-        Toast.show({
-            type: 'success',
-            text1: 'Cadastro realizado',
-            text2: 'Cadastro realizado com sucesso',
-            position: 'bottom',
-            visibilityTime: 2000,
-            autoHide: true,
+    if (response.success) {
+      Toast.show({
+        type: 'success',
+        text1: 'Cadastro realizado',
+        text2: 'Cadastro realizado com sucesso',
+        position: 'bottom',
+        visibilityTime: 2000,
+        autoHide: true,
 
-          })
-        router.push('/');
-      
+      })
+      setTimeout(() => router.push('/'), 2200)
+      return;
+
     }
-    const firstKey = Object.keys(response.data)[0];
-    const firstMessage = response.data[firstKey][0];
+    //const firstKey = Object.keys(response.data)[0];
+    //const firstMessage = response.data[firstKey][0];
 
     Toast.show({
-            type: 'error',
-            text1: 'Erro no cadastro',
-            text2: firstMessage,
-            position: 'bottom',
-            visibilityTime: 2000,
-            autoHide: true,
+      type: 'error',
+      text1: 'Erro no cadastro',
+      text2: 'Não foi possível se cadastrar',
+      position: 'bottom',
+      visibilityTime: 2000,
+      autoHide: true,
 
-          })
+    })
   };
 
- return (
-    <Pressable onPress={() => Keyboard.dismiss()} style={{ flex: 1, backgroundColor: Colors.creme }}>
-      <Header 
-          title="Criar Conta" 
-          onBackPress={() => {if(parte === 1) {router.push('/')} else setParte(1)}} 
-      />
-      <KeyboardAvoidingView style={styles.content} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.fieldsContainer}>
-            <TouchableOpacity onPress={() => { setImageTouched(true); pickImage(); }} style={styles.profilePicContainer}>
-              <View style={styles.profilePicWrapper}>
-                <Image
-                    style={styles.profilePic}
-                    source={{uri: image || "https://img.freepik.com/vetores-premium/icone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg?semt=ais_hybrid&w=740&q=80"}}
-                />
-                <View style={styles.cameraIconContainer}>
-                    <Icon source="camera" size={20} color={Colors.creme} />
-                </View>
-              </View>
-            </TouchableOpacity>
-            <Text style={styles.changePhotoText}>Alterar foto</Text>
-            { !imageError.isValid && (
-              <Text style={styles.dropdownErrorText}>{imageError.message}</Text>
-            )}
-          </View>
+  return (
 
-          {parte === 1 ? (
-            <>
-              <CustomInput
-                onChangeText={(dado: SetStateAction<string>) => setUsername(dado)}
-                onFocus={() => setNameTouched(true)}
-                placeholder='Digite seu nome'
-                errorMessage={!nameError.isValid ? nameError.message : ''}
-                iconName='account'
-                value={user}
-              />
-              <MaskedInput
-                mask={[/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
-                value={cpfMasked}
-                onChangeText={(masked, unmasked) => {
-                  setCpfMasked(masked);
-                  setCpf(unmasked);
-                }}
-                onFocus={() => setCpfTouched(true)}
-                placeholder="Digite seu CPF"
-                errorMessage={!cpfError.isValid ? cpfError.message : ''}
-                iconName='card-account-details-outline'
-                keyboardType="numeric"
-              />
-              <CustomInput
-                onChangeText={(dado: SetStateAction<string>) => setUserName(dado)}
-                onFocus={() => setUserNameTouched(true)}
-                placeholder='Digite o usuário'
-                errorMessage={!usernameError.isValid ? usernameError.message : ''}
-                iconName='at'
-                value={userName}
-              />
-              <CustomInput
-                onChangeText={(dado: SetStateAction<string>) => setPassword(dado)}
-                onFocus={() => setPasswordTouched(true)}
-                isPassword={true}
-                placeholder='Digite a senha'
-                errorMessage={!passwordError.isValid ? passwordError.message : ''}
-                iconName='lock'
-                value={password}
-              />
-              <CustomInput
-                onChangeText={(dado: SetStateAction<string>) => setPasswordCheck(dado)}
-                onFocus={() => setPasswordCheckTouched(true)}
-                isPassword={true} 
-                placeholder='Repita sua senha'
-                errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
-                iconName='lock-check'
-                value={passwordCheck}
-              />
-            </>
-          ):(
-            <>
-              <View style={[styles.dropdownWrapper, !stateError.isValid && styles.dropdownErrorBorder]}>
-                <View style={styles.iconContainer}>
-                    <Icon source="map-marker" size={24} color="#555" />
-                </View>
-                <View style={{flex: 1}}>
-                  <DropDownPicker
-                      textStyle={styles.dropdownText}
-                      placeholderStyle={styles.placeholderStyle}
-                      open={openState}
-                      value={state}
-                      items={stateList}
-                      setOpen={setOpenState}
-                      setValue={setState}
-                      style={styles.dropdownStyle}
-                      listMode="MODAL"
-                      modalContentContainerStyle={{ backgroundColor: Colors.creme }}
-                      dropDownContainerStyle={{ backgroundColor: Colors.creme }}
-                      onOpen={() => setStateTouched(true)}
-                      placeholder={'Selecione seu estado'}
+    <Pressable onPress={() => Keyboard.dismiss()} style={{ flex: 1, backgroundColor: Colors.creme }}>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <View style={styles.loadingBox}>
+            <ActivityIndicator size="large" color={Colors.laranja} />
+            <Text style={styles.loadingText}>Carregando...</Text>
+          </View>
+        </View>
+      ) : (
+        <>
+          <Header
+            title="Criar Conta"
+            onBackPress={() => { if (parte === 1) { router.push('/') } else setParte(1) }}
+          />
+          <KeyboardAvoidingView style={styles.content} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+              <View style={styles.fieldsContainer}>
+                <TouchableOpacity onPress={() => { setImageTouched(true); pickImage(); }} style={styles.profilePicContainer}>
+                  <View style={styles.profilePicWrapper}>
+                    <Image
+                      style={styles.profilePic}
+                      source={{ uri: image || "https://img.freepik.com/vetores-premium/icone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg?semt=ais_hybrid&w=740&q=80" }}
                     />
-                </View>
+                    <View style={styles.cameraIconContainer}>
+                      <Icon source="camera" size={20} color={Colors.creme} />
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                <Text style={styles.changePhotoText}>Alterar foto</Text>
+                {!imageError.isValid && (
+                  <Text style={styles.dropdownErrorText}>{imageError.message}</Text>
+                )}
               </View>
-                  { !stateError.isValid && (
+
+              {parte === 1 ? (
+                <>
+                  <CustomInput
+                    onChangeText={(dado: SetStateAction<string>) => setUsername(dado)}
+                    onFocus={() => setNameTouched(true)}
+                    placeholder='Digite seu nome'
+                    errorMessage={!nameError.isValid ? nameError.message : ''}
+                    iconName='account'
+                    value={user}
+                  />
+                  <MaskedInput
+                    mask={[/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
+                    value={cpfMasked}
+                    onChangeText={(masked, unmasked) => {
+                      setCpfMasked(masked);
+                      setCpf(unmasked);
+                    }}
+                    onFocus={() => setCpfTouched(true)}
+                    placeholder="Digite seu CPF"
+                    errorMessage={!cpfError.isValid ? cpfError.message : ''}
+                    iconName='card-account-details-outline'
+                    keyboardType="numeric"
+                  />
+                  <CustomInput
+                    onChangeText={(dado: SetStateAction<string>) => setUserName(dado)}
+                    onFocus={() => setUserNameTouched(true)}
+                    placeholder='Digite o usuário'
+                    errorMessage={!usernameError.isValid ? usernameError.message : ''}
+                    iconName='at'
+                    value={userName}
+                  />
+                  <CustomInput
+                    onChangeText={(dado: SetStateAction<string>) => setPassword(dado)}
+                    onFocus={() => setPasswordTouched(true)}
+                    isPassword={true}
+                    placeholder='Digite a senha'
+                    errorMessage={!passwordError.isValid ? passwordError.message : ''}
+                    iconName='lock'
+                    value={password}
+                  />
+                  <CustomInput
+                    onChangeText={(dado: SetStateAction<string>) => setPasswordCheck(dado)}
+                    onFocus={() => setPasswordCheckTouched(true)}
+                    isPassword={true}
+                    placeholder='Repita sua senha'
+                    errorMessage={!passwordCheckError.isValid ? passwordCheckError.message : ''}
+                    iconName='lock-check'
+                    value={passwordCheck}
+                  />
+                </>
+              ) : (
+                <>
+                  <View style={[styles.dropdownWrapper, !stateError.isValid && styles.dropdownErrorBorder]}>
+                    <View style={styles.iconContainer}>
+                      <Icon source="map-marker" size={24} color="#555" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <DropDownPicker
+                        textStyle={styles.dropdownText}
+                        placeholderStyle={styles.placeholderStyle}
+                        open={openState}
+                        value={state}
+                        items={stateList}
+                        setOpen={setOpenState}
+                        setValue={setState}
+                        style={styles.dropdownStyle}
+                        listMode="MODAL"
+                        modalContentContainerStyle={{ backgroundColor: Colors.creme }}
+                        dropDownContainerStyle={{ backgroundColor: Colors.creme }}
+                        onOpen={() => setStateTouched(true)}
+                        placeholder={'Selecione seu estado'}
+                      />
+                    </View>
+                  </View>
+                  {!stateError.isValid && (
                     <Text style={styles.dropdownErrorText}>{stateError.message}</Text>
                   )}
-              <View style={[styles.dropdownWrapper, !cityError.isValid && styles.dropdownErrorBorder]}>
-                <View style={styles.iconContainer}>
-                    <Icon source="city" size={24} color="#555" />
-                </View>
-                <View style={{flex: 1}}>
-                  <DropDownPicker
-                    textStyle={styles.dropdownText}
-                    placeholderStyle={styles.placeholderStyle}
-                    open={openCity}
-                    value={city}
-                    items={cityList}
-                    setOpen={setOpenCity}
-                    setValue={setCity}
-                    listMode="MODAL"
-                    modalContentContainerStyle={{ backgroundColor: Colors.creme }}
-                    dropDownContainerStyle={{ backgroundColor: Colors.creme }}
-                    disabled={!state}
-                    onOpen={() => setCityTouched(true)}
-                    style={styles.dropdownStyle}
-                    placeholder={'Selecione sua cidade'}
-                  />
-                </View>
+                  <View style={[styles.dropdownWrapper, !cityError.isValid && styles.dropdownErrorBorder]}>
+                    <View style={styles.iconContainer}>
+                      <Icon source="city" size={24} color="#555" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <DropDownPicker
+                        textStyle={styles.dropdownText}
+                        placeholderStyle={styles.placeholderStyle}
+                        open={openCity}
+                        value={city}
+                        items={cityList}
+                        setOpen={setOpenCity}
+                        setValue={setCity}
+                        listMode="MODAL"
+                        modalContentContainerStyle={{ backgroundColor: Colors.creme }}
+                        dropDownContainerStyle={{ backgroundColor: Colors.creme }}
+                        disabled={!state}
+                        onOpen={() => setCityTouched(true)}
+                        style={styles.dropdownStyle}
+                        placeholder={'Selecione sua cidade'}
+                      />
+                    </View>
+                  </View>
+                  {!cityError.isValid && state && (
+                    <Text style={styles.dropdownErrorText}>{cityError.message}</Text>
+                  )}
+                </>
+              )}
+              <View style={styles.buttonContainer}>
+                {parte === 1 ? (
+                  <TouchableOpacity
+                    style={[styles.registerButton, !isFirstStepFormFilled && styles.registerButtonDisabled]}
+                    onPress={handleContinuePress}
+                  >
+                    <Text style={[styles.registerButtonText, !isFirstStepFormFilled && styles.registerButtonTextDisabled]}>
+                      Continuar
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={[
+                      styles.registerButton,
+                      !isSecondStepFormFilled && styles.registerButtonDisabled
+                    ]}
+                    onPress={handleRegisterPress}
+                    disabled={!isSecondStepFormFilled}
+                  >
+                    <Text style={[
+                      styles.registerButtonText,
+                      !isSecondStepFormFilled && styles.registerButtonTextDisabled
+                    ]}>
+                      Cadastrar
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
-                { !cityError.isValid && state && (
-                  <Text style={styles.dropdownErrorText}>{cityError.message}</Text>
-                )}               
-            </>
-          )}
-          <View style={styles.buttonContainer}>
-            {parte === 1 ? (
-              <TouchableOpacity
-                style={[styles.registerButton, !isFirstStepFormFilled && styles.registerButtonDisabled]}
-                onPress={handleContinuePress}
-              >
-                <Text style={[styles.registerButtonText, !isFirstStepFormFilled && styles.registerButtonTextDisabled]}>
-                  Continuar
-                </Text>
-              </TouchableOpacity>
-            ):(
-              <TouchableOpacity
-                style={[
-                  styles.registerButton,
-                  !isSecondStepFormFilled && styles.registerButtonDisabled
-                ]}
-                onPress={handleRegisterPress}
-                disabled={!isSecondStepFormFilled}
-              >
-                <Text style={[
-                  styles.registerButtonText,
-                  !isSecondStepFormFilled &&  styles.registerButtonTextDisabled
-                ]}>
-                  Cadastrar
-                </Text>
-              </TouchableOpacity>
-            ) }
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-      <ToastManager / >
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </>
+      )}
+
+      <ToastManager />
     </Pressable>
- );
+  );
 }
 
 const styles = StyleSheet.create({
@@ -520,16 +549,16 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     minHeight: 56,
     ...Platform.select({
-        ios: {
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 6,
-        },
-        android: {
-            elevation: 5,
-            shadowColor: '#000',
-        },
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 5,
+        shadowColor: '#000',
+      },
     }),
   },
   dropdownErrorBorder: {
@@ -580,56 +609,81 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   profilePicWrapper: {
-      width: 140,
-      height: 140,
-      borderRadius: 75,
-      backgroundColor: '#fff',
-      justifyContent: 'center',
-      alignItems: 'center',
-      elevation: 5,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      borderWidth: 4,
-      borderColor: 'white',
+    width: 140,
+    height: 140,
+    borderRadius: 75,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    borderWidth: 4,
+    borderColor: 'white',
   },
   profilePic: {
-      width: '100%',
-      height: '100%',
-      borderRadius: 75,
+    width: '100%',
+    height: '100%',
+    borderRadius: 75,
   },
   cameraIconContainer: {
-      position: 'absolute',
-      bottom: 0,
-      right: 0,
-      backgroundColor: Colors.laranjaVariado,
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderWidth: 3,
-      borderColor: 'white',
-      elevation: 4,
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: Colors.laranjaVariado,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: 'white',
+    elevation: 4,
   },
   changePhotoText: {
-      fontFamily: 'NunitoBold',
-      fontSize: 14,
-      color: Colors.preto,
-      opacity: 0.6,
+    fontFamily: 'NunitoBold',
+    fontSize: 14,
+    color: Colors.preto,
+    opacity: 0.6,
   },
   dropdownStyle: {
-      borderWidth: 0,
-      backgroundColor: 'transparent',
-      paddingHorizontal: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 0,
   },
   dropdownText: {
-      fontFamily: 'NunitoMedium',
-      fontSize: 16,
-      color: '#333',
+    fontFamily: 'NunitoMedium',
+    fontSize: 16,
+    color: '#333',
   },
   iconContainer: {
-      marginRight: 10,
+    marginRight: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    paddingHorizontal: 20,
+  },
+  loadingBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 30,
+    paddingHorizontal: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    fontFamily: 'NunitoBold',
+    color: Colors.laranja,
   },
 })
